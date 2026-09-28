@@ -239,6 +239,20 @@
   .linkbtn { background: none; border: none; color: var(--teal); cursor: pointer; font-size: 12.5px; text-decoration: underline; padding: 0 4px; font-family: var(--font-body); }
   .loginbox { max-width: 460px; margin: 30px auto; }
   button:disabled { opacity: 0.45; cursor: not-allowed; }
+  .dicerow { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 8px; }
+  .rollrow { display: flex; justify-content: space-between; align-items: center; gap: 10px; padding: 8px 0; border-top: 1px solid var(--border-soft); }
+  .rollrow:first-child { border-top: none; }
+  .rollnum { font-family: var(--font-display); font-size: 20px; color: var(--gold-soft); white-space: nowrap; }
+  .rollnum.nat20 { color: var(--teal); }
+  .rollnum.nat1 { color: var(--crimson-soft); }
+  #rollToast { position: fixed; left: 50%; transform: translateX(-50%) translateY(20px); bottom: calc(env(safe-area-inset-bottom, 0px) + 16px);
+    background: var(--raised); border: 1px solid var(--gold); border-radius: 6px; padding: 10px 16px; z-index: 40; max-width: 92vw;
+    opacity: 0; pointer-events: none; transition: opacity 0.18s, transform 0.18s; text-align: center; }
+  #rollToast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+  #rollToast .hint { margin-top: 2px; }
+  .sticky-side { max-height: calc(100vh - 120px); overflow-y: auto; }
+  @media (max-width: 860px) { .sticky-side { position: static; max-height: none; overflow: visible; } }
+  @media (prefers-reduced-motion: reduce) { #rollToast { transition: none; } }
 
 </style>
 </head>
@@ -251,6 +265,7 @@
   <div class="tabs" id="tabs"></div>
 </div>
 <div class="wrap" id="app"></div>
+<div id="rollToast" role="status" aria-live="polite"></div>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 <script>
@@ -592,7 +607,8 @@ const state = {
   refFilter: '',
   busy: '',
   loginError: '',
-  saveNote: ''
+  saveNote: '',
+  rollLog: []
 };
 
 /* ---------------------------------------------------------------------
@@ -773,6 +789,7 @@ function blankCharacter() {
     conditionIndex: 0,
     defenseMisc: {reflex:0, fortitude:0, will:0},
     armorBonus: 0,
+    attackMisc: 0,
     babOverride: null,
     skillsTrained: [],
     feats: [],
@@ -964,7 +981,9 @@ function renderEditor() {
               <input type="number" value="${ch.abilities[k]}" oninput="ch_abil('${k}', this.value)">
               <div class="hint" data-d="af_${k}"></div></div>`).join('')}
         </div>
-        <div class="btnrow"><button class="btn small" onclick="ch_standardArray()">Fill standard array (15, 14, 13, 12, 10, 8)</button></div>
+        <div class="btnrow"><button class="btn small" onclick="ch_standardArray()">Fill standard array (15, 14, 13, 12, 10, 8)</button>
+          <button class="btn small" onclick="rollAbilityScores()">Roll 4d6, drop lowest</button></div>
+        <p class="hint">Rolled scores land in Str, Dex, Con, Int, Wis, Cha order; retype any number to move it. Use whichever method your table agrees on, standard array or rolled.</p>
       </div>
 
       <div class="panel">
@@ -986,6 +1005,11 @@ function renderEditor() {
           <div class="field"><label>Misc Reflex</label><input type="number" value="${ch.defenseMisc.reflex}" oninput="ch_misc('reflex', this.value)"></div>
           <div class="field"><label>Misc Fortitude</label><input type="number" value="${ch.defenseMisc.fortitude}" oninput="ch_misc('fortitude', this.value)"></div>
           <div class="field"><label>Misc Will</label><input type="number" value="${ch.defenseMisc.will}" oninput="ch_misc('will', this.value)"></div>
+        </div>
+        <div class="grid c2" style="margin-top:6px;">
+          <div class="field"><label>Attack misc bonus (weapon, feats)</label><input type="number" value="${ch.attackMisc || 0}" oninput="ch_num('attackMisc', this.value)"></div>
+          <div class="field"><label>Attack rolls<span class="info" title="d20 + Base Attack Bonus + Str modifier (melee) or Dex modifier (ranged) + your misc bonus.">?</span></label>
+            <div class="btnrow" style="margin-top:0;"><button class="btn small" onclick="rollAttack('melee')">Roll melee</button><button class="btn small" onclick="rollAttack('ranged')">Roll ranged</button></div></div>
         </div>
       </div>
 
@@ -1012,19 +1036,21 @@ function renderEditor() {
         <h2>Force Points and Dark Side Score</h2>
         <div class="grid c2">
           <div><div class="stat"><div class="n" data-d="fpLine"></div><div class="l">Force Points<span class="info" title="Pool is 5 plus half character level, rounded down. Spend one as a free action, once per round, to roll 1d6 (2d6 at 8th level, 3d6 at 15th, keeping the higher single die). Resets to full on level up.">?</span></div></div>
-            <div class="btnrow"><button class="btn small" onclick="ch_fp(-1)">Spend 1</button><button class="btn small" onclick="ch_fpFull()">Reset to max</button></div></div>
+            <div class="btnrow"><button class="btn small" onclick="ch_fp(-1)">Spend 1</button><button class="btn small" onclick="rollForcePoint()">Spend 1 and roll</button><button class="btn small" onclick="ch_fpFull()">Reset to max</button></div></div>
           <div><div class="stat"><div class="n" data-d="darkLine"></div><div class="l">Dark Side Score<span class="info" title="Capped at your Wisdom score. On reaching that cap a character becomes fully dark side dominant.">?</span></div></div>
             <div class="btnrow"><button class="btn small" onclick="ch_dark(-1)">-1</button><button class="btn small" onclick="ch_dark(1)">+1</button></div></div>
         </div>
+        <p class="hint">Every character has Force Points, not just Force users. Spend one to add a bonus die to a roll. Force powers and talents are separate and need the Force Sensitivity feat, which Jedi get for free.</p>
       </div>
 
       <div class="panel">
         <h2>Skills <span class="note" data-d="trainedLine"></span></h2>
         <table>
-          <tr><th>Skill</th><th>Ability</th><th>Trained</th><th>Total<span class="info" title="d20 + half level (rounded down) + ability modifier + 5 if trained + misc.">?</span></th></tr>
+          <tr><th>Skill</th><th>Ability</th><th>Trained</th><th>Total<span class="info" title="d20 + half level (rounded down) + ability modifier + 5 if trained + misc.">?</span></th><th></th></tr>
           ${SKILLS.map(s => `<tr><td>${s.name}</td><td>${ABIL_LABEL[s.a].slice(0, 3)}</td>
             <td><input type="checkbox" style="width:auto;" ${ch.skillsTrained.includes(s.key) ? 'checked' : ''} onchange="ch_skill('${s.key}')"></td>
-            <td data-d="sk_${s.key}"></td></tr>`).join('')}
+            <td data-d="sk_${s.key}"></td>
+            <td><button class="btn small" onclick="rollSkill('${s.key}')">Roll</button></td></tr>`).join('')}
         </table>
       </div>
 
@@ -1048,7 +1074,8 @@ function renderEditor() {
       <div class="panel">
         <h2>Equipment and Credits</h2>
         <div class="field"><label>Credits</label><input type="number" value="${escapeHtml(ch.credits)}" oninput="ch_num('credits', this.value)">
-          <p class="hint">Starting formula for ${CLASSES[ch.className].name}: ${CLASSES[ch.className].credits}.</p></div>
+          <p class="hint">Starting formula for ${CLASSES[ch.className].name}: ${CLASSES[ch.className].credits}.</p>
+          <div class="btnrow"><button class="btn small" onclick="rollCredits()">Roll starting credits</button></div></div>
         ${tagList(ch.equipment, 'equipment')}
         <div class="btnrow"><input id="equipInput" placeholder="Item name" style="flex:1; min-width:160px;" onkeydown="if(event.key==='Enter')ch_addTag('equipment','equipInput')">
           <button class="btn small" onclick="ch_addTag('equipment','equipInput')">Add item</button></div>
@@ -1079,6 +1106,13 @@ function renderEditor() {
       <div class="panel">
         <h2>Quick summary</h2>
         <p><strong data-d="sumName"></strong><br><span data-d="sum1"></span><br><span data-d="sum2"></span></p>
+      </div>
+      <div class="panel">
+        <h2>Dice and Roll Log</h2>
+        <div class="dicerow">${[4, 6, 8, 10, 12, 20, 100].map(n => `<button class="btn small" onclick="rollDie(${n})">d${n}</button>`).join('')}</div>
+        <div class="btnrow"><input id="trayExpr" placeholder="2d6+3" style="flex:1; min-width:90px;" onkeydown="if(event.key==='Enter')rollExpr()">
+          <button class="btn small" onclick="rollExpr()">Roll</button></div>
+        <div id="rollLog">${rollLogHtml()}</div>
       </div>
     </div>
   </div>`;
@@ -1176,6 +1210,92 @@ function ch_newDay() { state.draft.secondWindUsed = false; refreshDerived(); }
 function ch_fp(delta) { const ch = state.draft, d = computeDerived(ch); ch.forcePointsCurrent = Math.max(0, Math.min(d.fpMax, fpNow(ch, d) + delta)); refreshDerived(); }
 function ch_fpFull() { state.draft.forcePointsCurrent = computeDerived(state.draft).fpMax; refreshDerived(); }
 function ch_dark(delta) { const ch = state.draft, cap = computeDerived(ch).darkSideCap; ch.darkSideScore = Math.max(0, Math.min(cap, ch.darkSideScore + delta)); refreshDerived(); }
+
+
+/* ---------------------------------------------------------------------
+   DICE
+--------------------------------------------------------------------- */
+function rand(n) {
+  try {
+    const a = new Uint32Array(1), lim = Math.floor(4294967296 / n) * n;
+    let x;
+    do { crypto.getRandomValues(a); x = a[0]; } while (x >= lim);
+    return (x % n) + 1;
+  } catch (e) { return Math.floor(Math.random() * n) + 1; }
+}
+function rollDice(n, sides) { const r = []; for (let i = 0; i < n; i++) r.push(rand(sides)); return r; }
+function signed(n) { return (n >= 0 ? '+ ' : '- ') + Math.abs(n); }
+
+function rollLogHtml() {
+  if (!state.rollLog.length) return '<p class="hint">No rolls yet. Use the Roll buttons on skills, attacks, and Force Points, or the dice above.</p>';
+  return state.rollLog.map(r => `<div class="rollrow"><div><strong>${escapeHtml(r.label)}</strong><div class="hint">${escapeHtml(r.detail)}</div></div>
+    <div class="rollnum ${r.flag || ''}">${escapeHtml(r.total)}</div></div>`).join('');
+}
+let toastTimer = null;
+function logRoll(label, detail, total, flag) {
+  state.rollLog.unshift({label: label, detail: detail, total: String(total), flag: flag || '', t: Date.now()});
+  if (state.rollLog.length > 12) state.rollLog.pop();
+  const el = document.getElementById('rollLog'); if (el) el.innerHTML = rollLogHtml();
+  const t = document.getElementById('rollToast');
+  if (t) {
+    t.innerHTML = `<strong>${escapeHtml(label)}</strong> <span class="rollnum ${flag || ''}">${escapeHtml(total)}</span><div class="hint">${escapeHtml(detail)}</div>`;
+    t.classList.add('show');
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(() => t.classList.remove('show'), 6000);
+  }
+}
+function rollCheck(label, bonus) {
+  const d = rand(20);
+  const note = d === 20 ? '  natural 20' : (d === 1 ? '  natural 1' : '');
+  logRoll(label, 'd20 [' + d + '] ' + signed(bonus) + note, d + bonus, d === 20 ? 'nat20' : (d === 1 ? 'nat1' : ''));
+}
+function rollSkill(key) {
+  const s = SKILLS.find(x => x.key === key), d = computeDerived(state.draft);
+  rollCheck(s.name, skillTotal(state.draft, s, d));
+}
+function rollAttack(kind) {
+  const ch = state.draft, d = computeDerived(ch);
+  const mod = kind === 'melee' ? d.mods.str : d.mods.dex;
+  rollCheck(kind === 'melee' ? 'Melee attack' : 'Ranged attack', d.bab + mod + (Number(ch.attackMisc) || 0));
+}
+function rollForcePoint() {
+  const ch = state.draft, d = computeDerived(ch), fp = fpNow(ch, d);
+  if (fp <= 0) { logRoll('Force Point', 'No Force Points left to spend.', '0'); return; }
+  ch.forcePointsCurrent = fp - 1;
+  const lvl = Number(ch.level) || 1, dice = lvl >= 15 ? 3 : (lvl >= 8 ? 2 : 1);
+  const r = rollDice(dice, 6), best = Math.max.apply(null, r);
+  logRoll('Force Point', dice + 'd6 [' + r.join(', ') + '] keep the highest, add to your roll', best);
+  refreshDerived();
+}
+function rollDie(n) { const v = rand(n); logRoll('d' + n, 'd' + n + ' [' + v + ']', v, (n === 20 && v === 20) ? 'nat20' : ((n === 20 && v === 1) ? 'nat1' : '')); }
+function rollExpr() {
+  const el = document.getElementById('trayExpr');
+  const m = /^\s*(\d{0,2})d(\d{1,3})\s*(?:([+-])\s*(\d{1,4}))?\s*$/i.exec(el.value);
+  if (!m) { logRoll('Dice', 'Try something like 2d6+3 or d20-1.', '?'); return; }
+  const n = Number(m[1] || 1), sides = Number(m[2]), mod = m[3] ? (m[3] === '-' ? -1 : 1) * Number(m[4]) : 0;
+  if (n < 1 || sides < 2) { logRoll('Dice', 'Use at least one die with two or more sides.', '?'); return; }
+  const r = rollDice(n, sides), sum = r.reduce((a, b) => a + b, 0);
+  logRoll(el.value.trim().toLowerCase().replace(/\s+/g, ''), '[' + r.join(', ') + ']' + (mod ? ' ' + signed(mod) : ''), sum + mod);
+}
+function rollAbilityScores() {
+  const parts = [];
+  ABILS.forEach(k => {
+    const r = rollDice(4, 6), low = Math.min.apply(null, r);
+    const kept = r.slice(), i = kept.indexOf(low); kept.splice(i, 1);
+    const total = kept.reduce((a, b) => a + b, 0);
+    state.draft.abilities[k] = total;
+    parts.push(ABIL_LABEL[k].slice(0, 3) + ' ' + total + ' [' + r.join(',') + ' drop ' + low + ']');
+  });
+  logRoll('Ability scores', parts.join('   '), '4d6 x 6');
+  reEditor();
+}
+function rollCredits() {
+  const ch = state.draft, mult = Number((/x\s*(\d+)/.exec(CLASSES[ch.className].credits) || [0, 0])[1]);
+  const r = rollDice(3, 4), sum = r.reduce((a, b) => a + b, 0);
+  ch.credits = sum * mult;
+  logRoll('Starting credits', '3d4 [' + r.join(', ') + '] = ' + sum + ' x ' + mult, sum * mult);
+  reEditor();
+}
 
 async function ch_save() {
   const note = document.getElementById('saveNote'), btn = document.getElementById('saveBtn');
