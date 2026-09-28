@@ -1,0 +1,1506 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Taris Character Forge</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600;700&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+
+  :root, :root:not([data-theme="light"]), :root[data-theme="dark"] {
+    --bg: #14171d;
+    --panel: #1b2029;
+    --panel2: #21273233;
+    --panel-solid: #21273233;
+    --raised: #242b36;
+    --border: #3a4150;
+    --border-soft: #2a303c;
+    --text: #e9e4d6;
+    --text-dim: #a3aab8;
+    --text-faint: #6c7484;
+    --gold: #d4a24c;
+    --gold-soft: #e7c98a;
+    --teal: #6bc2bd;
+    --crimson: #b0483f;
+    --crimson-soft: #d98a80;
+    --font-display: 'IBM Plex Mono', ui-monospace, monospace;
+    --font-body: 'IBM Plex Sans', system-ui, sans-serif;
+  }
+  * { box-sizing: border-box; }
+  html { scroll-padding-top: env(safe-area-inset-top, 0px); }
+  body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--text);
+    font-family: var(--font-body);
+    padding-top: env(safe-area-inset-top, 0px);
+    padding-bottom: env(safe-area-inset-bottom, 0px);
+    min-height: 100%;
+  }
+  a { color: var(--teal); }
+  .topbar {
+    position: sticky;
+    top: env(safe-area-inset-top, 0px);
+    z-index: 20;
+    background: linear-gradient(180deg, #171b21 0%, #14171d 100%);
+    border-bottom: 1px solid var(--border);
+    padding: 14px 18px 0 18px;
+  }
+  .brand {
+    display: flex;
+    align-items: baseline;
+    gap: 10px;
+    margin-bottom: 12px;
+    flex-wrap: wrap;
+  }
+  .brand .mark { color: var(--gold); font-family: var(--font-display); font-size: 20px; letter-spacing: 1px; }
+  .brand .sub { color: var(--text-faint); font-size: 13px; }
+  .tabs { display: flex; gap: 4px; overflow-x: auto; }
+  .tab {
+    font-family: var(--font-display);
+    font-size: 13px;
+    color: var(--text-dim);
+    background: none;
+    border: 1px solid transparent;
+    border-bottom: none;
+    padding: 9px 14px;
+    cursor: pointer;
+    border-radius: 6px 6px 0 0;
+    white-space: nowrap;
+  }
+  .tab.active { color: var(--gold); background: var(--bg); border-color: var(--border); border-bottom: 1px solid var(--bg); position: relative; top: 1px; }
+  .tab:hover:not(.active) { color: var(--text); }
+  .wrap { max-width: 980px; margin: 0 auto; padding: 22px 18px 80px 18px; }
+  .banner {
+    border: 1px solid var(--border);
+    border-left: 3px solid var(--teal);
+    background: var(--raised);
+    padding: 12px 14px;
+    border-radius: 4px;
+    font-size: 13.5px;
+    color: var(--text-dim);
+    margin-bottom: 18px;
+    line-height: 1.5;
+  }
+  .banner.warn { border-left-color: var(--crimson-soft); }
+  .banner.gold { border-left-color: var(--gold); }
+  .panel {
+    border: 1px solid var(--border);
+    background: var(--panel);
+    border-radius: 6px;
+    padding: 18px;
+    margin-bottom: 16px;
+  }
+  .panel > h2 {
+    font-family: var(--font-display);
+    font-size: 14px;
+    color: var(--gold);
+    margin: 0 0 14px 0;
+    padding-bottom: 10px;
+    border-bottom: 1px solid var(--border-soft);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+  }
+  .panel > h2 .note { font-family: var(--font-body); font-size: 12px; color: var(--text-faint); font-weight: 400; }
+  h1 { font-family: var(--font-display); font-size: 22px; color: var(--gold-soft); margin: 0 0 4px 0; }
+  h3 { font-family: var(--font-display); font-size: 13px; color: var(--text); margin: 0 0 10px 0; }
+  p { line-height: 1.55; color: var(--text-dim); }
+  .grid { display: grid; gap: 14px; }
+  .grid.c2 { grid-template-columns: repeat(2, 1fr); }
+  .grid.c3 { grid-template-columns: repeat(3, 1fr); }
+  .grid.c4 { grid-template-columns: repeat(4, 1fr); }
+  .grid.c6 { grid-template-columns: repeat(6, 1fr); }
+  @media (max-width: 720px) {
+    .grid.c2, .grid.c3, .grid.c4, .grid.c6 { grid-template-columns: repeat(2, 1fr); }
+  }
+  label { display: block; font-size: 12px; color: var(--text-faint); margin-bottom: 5px; }
+  .field { margin-bottom: 12px; }
+  input, select, textarea {
+    width: 100%;
+    background: var(--raised);
+    border: 1px solid var(--border);
+    color: var(--text);
+    padding: 9px 10px;
+    border-radius: 4px;
+    font-family: var(--font-body);
+    font-size: 14px;
+  }
+  input:focus, select:focus, textarea:focus { outline: 2px solid var(--teal); outline-offset: 1px; }
+  textarea { resize: vertical; min-height: 60px; }
+  .btn {
+    font-family: var(--font-display);
+    font-size: 13px;
+    background: var(--raised);
+    color: var(--text);
+    border: 1px solid var(--border);
+    padding: 9px 14px;
+    border-radius: 4px;
+    cursor: pointer;
+  }
+  .btn:hover { border-color: var(--gold); color: var(--gold-soft); }
+  .btn.primary { background: var(--gold); color: #1a1408; border-color: var(--gold); font-weight: 600; }
+  .btn.primary:hover { background: var(--gold-soft); color: #1a1408; }
+  .btn.danger { border-color: var(--crimson-soft); color: var(--crimson-soft); }
+  .btn.danger:hover { background: var(--crimson); color: #fff; }
+  .btn.small { padding: 5px 9px; font-size: 12px; }
+  .btnrow { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 10px; }
+  .stat {
+    border: 1px solid var(--border);
+    background: var(--raised);
+    border-radius: 6px;
+    padding: 12px;
+    text-align: center;
+  }
+  .stat .n { font-family: var(--font-display); font-size: 26px; color: var(--gold-soft); }
+  .stat .l { font-size: 11px; color: var(--text-faint); margin-top: 3px; }
+  .info {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 16px; height: 16px;
+    border-radius: 50%;
+    border: 1px solid var(--text-faint);
+    color: var(--text-faint);
+    font-size: 11px;
+    font-family: var(--font-body);
+    cursor: help;
+    margin-left: 6px;
+  }
+  .tags { display: flex; flex-wrap: wrap; gap: 7px; margin-top: 8px; }
+  .tag {
+    background: var(--raised);
+    border: 1px solid var(--border);
+    border-radius: 999px;
+    padding: 5px 6px 5px 12px;
+    font-size: 13px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .tag button {
+    background: none; border: none; color: var(--text-faint); cursor: pointer; font-size: 14px; line-height: 1;
+    padding: 2px 4px;
+  }
+  .tag button:hover { color: var(--crimson-soft); }
+  table { width: 100%; border-collapse: collapse; font-size: 13.5px; }
+  th { text-align: left; color: var(--text-faint); font-weight: 500; font-size: 11.5px; padding: 6px 8px; border-bottom: 1px solid var(--border); }
+  td { padding: 6px 8px; border-bottom: 1px solid var(--border-soft); }
+  tr:last-child td { border-bottom: none; }
+  .condition-track { display: flex; gap: 4px; margin-top: 8px; }
+  .condition-step {
+    flex: 1;
+    text-align: center;
+    padding: 10px 4px;
+    border: 1px solid var(--border);
+    background: var(--raised);
+    cursor: pointer;
+    font-family: var(--font-display);
+    font-size: 12px;
+    color: var(--text-dim);
+    border-radius: 4px;
+  }
+  .condition-step.active { background: var(--crimson); color: #fff; border-color: var(--crimson); }
+  .condition-step:first-child.active { background: var(--teal); border-color: var(--teal); color: #0a1615; }
+  .cards { display: grid; grid-template-columns: repeat(auto-fill, minmax(230px, 1fr)); gap: 14px; }
+  .card {
+    border: 1px solid var(--border);
+    background: var(--panel);
+    border-radius: 6px;
+    padding: 14px;
+    cursor: pointer;
+  }
+  .card:hover { border-color: var(--gold); }
+  .card h4 { margin: 0 0 3px 0; font-family: var(--font-display); font-size: 15px; color: var(--gold-soft); }
+  .card .meta { font-size: 12px; color: var(--text-faint); margin-bottom: 8px; }
+  .card .row { display: flex; justify-content: space-between; font-size: 12.5px; color: var(--text-dim); margin-top: 3px; }
+  .pill { display: inline-block; font-size: 10.5px; padding: 2px 7px; border-radius: 999px; border: 1px solid var(--border); color: var(--text-faint); }
+  .pill.you { border-color: var(--teal); color: var(--teal); }
+  .empty { text-align: center; padding: 50px 20px; color: var(--text-faint); }
+  details.ref { border: 1px solid var(--border-soft); border-radius: 6px; margin-bottom: 8px; background: var(--raised); }
+  details.ref > summary { padding: 11px 14px; cursor: pointer; font-family: var(--font-display); font-size: 13px; color: var(--text); list-style: none; }
+  details.ref > summary::-webkit-details-marker { display: none; }
+  details.ref > summary:before { content: "+ "; color: var(--gold); }
+  details.ref[open] > summary:before { content: "\2212 "; }
+  details.ref .body { padding: 0 14px 14px 14px; font-size: 13.5px; color: var(--text-dim); line-height: 1.6; }
+  details.ref .body ul { margin: 6px 0; padding-left: 18px; }
+  details.ref .body li { margin-bottom: 4px; }
+  .src { color: var(--gold); font-family: var(--font-display); font-size: 11.5px; }
+  .searchbox { margin-bottom: 16px; }
+  .hint { font-size: 12px; color: var(--text-faint); margin-top: 4px; }
+  .split { display: grid; grid-template-columns: 1.4fr 1fr; gap: 16px; align-items: start; }
+  @media (max-width: 860px) { .split { grid-template-columns: 1fr; } }
+  .sticky-side { position: sticky; top: calc(env(safe-area-inset-top, 0px) + 96px); }
+  .brand { justify-content: space-between; }
+  #who { font-size: 12.5px; color: var(--text-dim); }
+  .linkbtn { background: none; border: none; color: var(--teal); cursor: pointer; font-size: 12.5px; text-decoration: underline; padding: 0 4px; font-family: var(--font-body); }
+  .loginbox { max-width: 460px; margin: 30px auto; }
+  button:disabled { opacity: 0.45; cursor: not-allowed; }
+  .dicerow { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 8px; }
+  .rollrow { display: flex; justify-content: space-between; align-items: center; gap: 10px; padding: 8px 0; border-top: 1px solid var(--border-soft); }
+  .rollrow:first-child { border-top: none; }
+  .rollnum { font-family: var(--font-display); font-size: 20px; color: var(--gold-soft); white-space: nowrap; }
+  .rollnum.nat20 { color: var(--teal); }
+  .rollnum.nat1 { color: var(--crimson-soft); }
+  #rollToast { position: fixed; left: 50%; transform: translateX(-50%) translateY(20px); bottom: calc(env(safe-area-inset-bottom, 0px) + 16px);
+    background: var(--raised); border: 1px solid var(--gold); border-radius: 6px; padding: 10px 16px; z-index: 40; max-width: 92vw;
+    opacity: 0; pointer-events: none; transition: opacity 0.18s, transform 0.18s; text-align: center; }
+  #rollToast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+  #rollToast .hint { margin-top: 2px; }
+  .sticky-side { max-height: calc(100vh - 120px); overflow-y: auto; }
+  @media (max-width: 860px) { .sticky-side { position: static; max-height: none; overflow: visible; } }
+  @media (prefers-reduced-motion: reduce) { #rollToast { transition: none; } }
+
+</style>
+</head>
+<body>
+<div class="topbar">
+  <div class="brand">
+    <span><span class="mark">TARIS CHARACTER FORGE</span> <span class="sub">Saga Edition characters for the Shadow of the Crusade campaign</span></span>
+    <span id="who"></span>
+  </div>
+  <div class="tabs" id="tabs"></div>
+</div>
+<div class="wrap" id="app"></div>
+<div id="rollToast" role="status" aria-live="polite"></div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script src="swse_data.js"></script>
+<script src="swse_picker.js"></script>
+<script>
+/*CORE_START*/
+const ABILS = ['str','dex','con','int','wis','cha'];
+const ABIL_LABEL = {str:'Strength', dex:'Dexterity', con:'Constitution', int:'Intelligence', wis:'Wisdom', cha:'Charisma'};
+
+const SPECIES = {
+  human:    { name: 'Human', mods: {}, defenseAll: 0, bonusFeat: 'One bonus feat', verified: true,
+              note: 'No ability adjustments. Gains one bonus feat at 1st level.' },
+  duros:    { name: 'Duros', mods: {dex:2, int:2, con:-2}, defenseAll: 0, verified: true,
+              note: '+2 Dexterity, +2 Intelligence, -2 Constitution. Looked up against several independent Saga Edition references this session rather than re-checked against your own core rulebook copy.' },
+  rodian:   { name: 'Rodian', mods: {dex:2, wis:-2, cha:-2}, defenseAll: 0, verified: true,
+              note: '+2 Dexterity, -2 Wisdom, -2 Charisma. Looked up against several independent Saga Edition references this session rather than re-checked against your own core rulebook copy.' },
+  twilek:   { name: "Twi'lek", mods: {cha:2, wis:-2}, defenseAll: 0, verified: true,
+              note: '+2 Charisma, -2 Wisdom.' },
+  wookiee:  { name: 'Wookiee', mods: {str:4, con:2, dex:-2, wis:-2, cha:-2}, defenseAll: 0, verified: true,
+              note: '+4 Strength, +2 Constitution, -2 Dexterity, -2 Wisdom, -2 Charisma.' },
+  zabrak:   { name: 'Zabrak', mods: {}, defenseAll: 1, verified: true,
+              note: 'No ability adjustments. Superior Defenses: +1 species bonus to all four Defenses.' },
+  cathar:   { name: 'Cathar', mods: {dex:2, int:-2}, defenseAll: 0, verified: true,
+              note: '+2 Dexterity, -2 Intelligence. Cathar refugees resettled on Taris after their own homeworld\'s destruction, a built in reason a Cathar character is already here.' },
+  miraluka: { name: 'Miraluka', mods: {int:2, dex:-2}, defenseAll: 0, verified: true, bonusFeat: 'Force Training (automatic)',
+              note: '+2 Intelligence, -2 Dexterity. No working eyes; sees through Force Vision instead. Automatically gains Force Training as a bonus feat.' }
+};
+
+const CLASSES = {
+  jedi:      { name: 'Jedi', trainedSkills: 2, hpFirst: 30, hitDie: 10, credits: '3d4 x 100',
+               defenseBonus: {reflex:1, fortitude:1, will:1}, bab: 'full',
+               note: '+1 class bonus to all three Defenses at 1st level. Hit points of 30 at 1st level and the full Base Attack Bonus progression are confirmed both in this project\'s own records and against several independent Saga Edition references looked up this session.' },
+  noble:     { name: 'Noble', trainedSkills: 6, hpFirst: 18, hitDie: 6, credits: '3d4 x 400',
+               defenseBonus: {reflex:1, fortitude:0, will:2}, bab: 'threequarter',
+               note: '+1 class bonus to Reflex Defense and +2 to Will Defense at 1st level, +0 to Fortitude. Base Attack Bonus is three quarters of level, rounded down, the same progression as Scoundrel and Scout.' },
+  scoundrel: { name: 'Scoundrel', trainedSkills: 4, hpFirst: 18, hitDie: 8, credits: '3d4 x 250',
+               defenseBonus: {reflex:2, fortitude:0, will:1}, bab: 'threequarter',
+               note: '+2 class bonus to Reflex Defense and +1 to Will Defense at 1st level, +0 to Fortitude.' },
+  scout:     { name: 'Scout', trainedSkills: 5, hpFirst: 24, hitDie: 8, credits: '3d4 x 250',
+               defenseBonus: {reflex:2, fortitude:1, will:0}, bab: 'threequarter',
+               note: '+2 class bonus to Reflex Defense and +1 to Fortitude at 1st level, +0 to Will.' },
+  soldier:   { name: 'Soldier', trainedSkills: 3, hpFirst: 30, hitDie: 10, credits: '3d4 x 250',
+               defenseBonus: {reflex:1, fortitude:2, will:0}, bab: 'full',
+               note: '+1 class bonus to Reflex Defense and +2 to Fortitude at 1st level, +0 to Will.' }
+};
+
+const SKILLS = [
+  {key:'acrobatics', name:'Acrobatics', a:'dex'},
+  {key:'climb', name:'Climb', a:'str'},
+  {key:'deception', name:'Deception', a:'cha'},
+  {key:'endurance', name:'Endurance', a:'con'},
+  {key:'gather', name:'Gather Information', a:'cha'},
+  {key:'initiative', name:'Initiative', a:'dex'},
+  {key:'jump', name:'Jump', a:'str'},
+  {key:'knowledge', name:'Knowledge', a:'int'},
+  {key:'mechanics', name:'Mechanics', a:'int'},
+  {key:'perception', name:'Perception', a:'wis'},
+  {key:'persuasion', name:'Persuasion', a:'cha'},
+  {key:'pilot', name:'Pilot', a:'dex'},
+  {key:'stealth', name:'Stealth', a:'dex'},
+  {key:'survival', name:'Survival', a:'wis'},
+  {key:'swim', name:'Swim', a:'str'},
+  {key:'treatinjury', name:'Treat Injury', a:'wis'},
+  {key:'usecomputer', name:'Use Computer', a:'int'},
+  {key:'usetheforce', name:'Use the Force', a:'cha'}
+];
+
+const CONDITION_STEPS = ['Normal', '-1 step', '-2 step', '-5 step', '-10 step', 'Helpless'];
+
+// Talent and power catalog. Items with an explicit "items" list can be picked individually;
+// others are tracked at the tree level, since that is the level of detail on record for them.
+const TALENT_CATALOG = {
+  jedi: [
+    {tree:'Lightsaber Form Powers', source:'Jedi and the Force, Part One', note:'24 Force powers, each tied to a lightsaber combat form (Shii-Cho, Makashi, Soresu, Ataru, Shien/Djem So, Niman, Juyo/Vaapad, Trakata, Jar\'Kai, Sokan). Any lightsaber wielder can take one before spending a talent on that form.',
+      items:['Assured Strike','Barrier of Blades','Circle of Shelter','Contentious Opportunity','Deflecting Slash','Disarming Slash','Draw Closer','Falling Avalanche','Fluid Riposte','Hawk-Bat Swoop','High Ground Defense','Makashi Riposte','Pass the Blade','Pushing Slash','Rising Whirlwind','Saber Swarm','Sarlacc Sweep','Shien Deflection','Swift Flank','Tempered Aggression','Twin Strike','Unbalancing Block','Unhindered Charge',"Vornskr's Ferocity"]},
+    {tree:'New Force Powers, first wave', source:'Jedi and the Force, Part One', note:'17 new Force powers.',
+      items:['Blind','Convection','Crucitorn','Cryokinesis','Drain Energy','Fold Space','Force Light','Force Storm','Force Track','Hatred','Inertia','Inspire','Intercept','Memory Walk','Mind Shard','Plant Surge','Thought Bomb']},
+    {tree:'New Force Powers, second wave', source:'Jedi and the Force, Part Two', note:'13 more Force powers.',
+      items:['Cloak','Malacia','Morichro','Phase','Rend','Shatterpoint','Technometry','Corruption','Force Blast','Force Shield','Force Storm','Kinetic Combat','Repulse']},
+    {tree:'Alter, Control, Dark Side, and Sense additions', source:'Jedi and the Force, Part Two', note:'New talents attached directly to the core Jedi talent trees, usable at 1st level with no prestige class required.'},
+    {tree:'Light Side Talent Tree', source:'Jedi and the Force, Part Two', note:'A full new talent tree for the Jedi class.'},
+    {tree:'Jedi Weapon Master Talent Tree', source:'Jedi and the Force, Part Two', note:'Full tree, pulled from the Jedi Academy Training Manual.'},
+    {tree:'Force Techniques and Force Secrets', source:'Jedi and the Force, Parts One and Two', note:'Extended and Improved technique upgrades, Cure Disease, and the Holocron Loremaster and Mentor Force Secrets.'},
+    {tree:'Lightsaber Construction and Crystals', source:'Jedi and the Force, Part One', note:'The full crystal table, the Adegan versus Ilum era ruling for this campaign, archaic lightsabers, and dual phase lightsabers.'}
+  ],
+  soldier: [
+    {tree:'Armor Specialist, Brawler, and Weapon Specialist additions', source:'New Talents booklet, from the Knights of the Old Republic Campaign Guide'},
+    {tree:'Rocket Jumper Talent Tree', source:'New Talents booklet, from the Knights of the Old Republic Campaign Guide', note:'Era native, no reskinning needed.'},
+    {tree:'Commando addition: Defensive Position', source:'New Talents booklet, from Galaxy at War'},
+    {tree:'Shockboxer Talent Tree', source:'New Talents booklet, from Galaxy at War', note:'An unarmed fighting style built around stun damage.'},
+    {tree:'Veteran Talent Tree', source:'New Talents booklet, from Galaxy at War', note:'Ties toward the officer prestige class.'},
+    {tree:'Weapon Specialist addition: Autofire Assault', source:'New Talents booklet, from Galaxy at War'},
+    {tree:'Unarmed Mastery Talent Tree', source:'New Talents booklet, from Galaxy at War', note:'Open to any class, not Soldier restricted.'},
+    {tree:'Brute Squad Talent Tree', source:'New Talents booklet, from the Legacy Era Campaign Guide'},
+    {tree:'Ambusher Talent Tree', source:'New Talents booklet, from the Rebellion Era Campaign Guide'},
+    {tree:'Mercenary Talent Tree', source:'New Talents booklet, from the Force Unleashed Campaign Guide', note:'Ties toward the elite trooper prestige class.'},
+    {tree:'New Brawler and Commando talents', source:'New Talents booklet, from Galaxy of Intrigue'}
+  ],
+  scoundrel: [
+    {tree:'Fortune addition and Run and Gun Talent Tree', source:'New Talents booklet, from the Knights of the Old Republic Campaign Guide'},
+    {tree:'Brigand Talent Tree, plus Misfortune additions', source:'New Talents booklet, from Galaxy at War'},
+    {tree:'More Misfortune additions and the Biotech Talent Tree', source:'New Talents booklet, from the Legacy Era Campaign Guide', note:'The Biotech tree needs its original faction branding reskinned before use, it is tied by name to a much later era enemy.'},
+    {tree:'Recklessness Talent Tree', source:'New Talents booklet, from the Rebellion Era Campaign Guide'},
+    {tree:'Slicer and Smuggling Talent Trees', source:'New Talents booklet, from the Force Unleashed Campaign Guide'},
+    {tree:'Revolutionary Talent Tree', source:'New Talents booklet, from Galaxy of Intrigue'},
+    {tree:'Trickery, Piracy, Disgrace, and Genoharadan (prestige tier, not yet built)', source:'Scum and Villainy', note:'Identified but deliberately left out of the New Talents booklet as a future follow up.'}
+  ],
+  scout: [
+    {tree:'Awareness addition and Hyperspace Explorer Talent Tree', source:'New Talents booklet, from the Knights of the Old Republic Campaign Guide'},
+    {tree:'Camouflage additions and the Advance Patrol Talent Tree', source:'New Talents booklet, from Galaxy at War'},
+    {tree:'Versatility Talent Tree', source:'New Talents booklet, from the Legacy Era Campaign Guide'},
+    {tree:'Unpredictable Talent Tree', source:'New Talents booklet, from the Rebellion Era Campaign Guide'},
+    {tree:'Awareness addition and Spy Talent Tree', source:'New Talents booklet, from the Force Unleashed Campaign Guide'},
+    {tree:'Espionage Talent Tree', source:'New Talents booklet, from Galaxy of Intrigue'}
+  ],
+  noble: [
+    {tree:'Influence and Leadership additions, plus the Fencing Talent Tree', source:'New Talents booklet, from the Knights of the Old Republic Campaign Guide', note:'Fencing is explicitly written as period Old Republic noble swordplay, the single most on theme Noble find in the project.'},
+    {tree:'Anticipation Talent Tree, plus Leadership additions', source:'New Talents booklet, from Galaxy at War'},
+    {tree:'Provocateur Talent Tree', source:'New Talents booklet, from the Legacy Era Campaign Guide', note:'The source ties this tree to the Charlatan prestige class from Scum and Villainy.'},
+    {tree:'Inspiration and Ideologue Talent Trees, plus Lineage additions', source:'New Talents booklet, from the Force Unleashed Campaign Guide'},
+    {tree:'Master of Intrigue Talent Tree', source:'New Talents booklet, from Galaxy of Intrigue', note:'Presented here as Noble content, matching that source\'s own framing.'}
+  ],
+  cross: [
+    {tree:'Unarmed Mastery Talent Tree', source:'New Talents booklet, from Galaxy at War', note:'Open to any class.'},
+    {tree:'General Combat Feats (about 20)', source:'New Talents booklet, from Galaxy at War', note:'Soldier gets the widest bonus feat access to this list, Scout a close second.'},
+    {tree:'Martial Arts Fighting Styles', source:'New Talents booklet, from Galaxy at War', note:'Eight traditions, each its own Expertise talent: Echani, Hijkata, K\'tara, K\'thri, Stava, Tae Jitsu, Teras Kasi, Wrruushi Training.'},
+    {tree:'Team Feats (13)', source:'New Talents booklet, from Galaxy at War', note:'Squad bonuses that scale up when multiple party members share one: Swim, Climb, Stealth, Treat Injury, Ride, Acrobatics, Use Computer, Mechanics, Endurance, Jump, Pilot, Perception, Survival.'}
+  ],
+  gm: [
+    {tree:'Sith Remnant Disciple Talent Tree', source:'Sith Remnant Toolkit (Complete Game Master\'s Guide)', note:'Five talents, reskinned from a later era source with its own name and history stripped out.'},
+    {tree:'Sith Alchemy Talent Tree', source:'Sith Remnant Toolkit (Complete Game Master\'s Guide)', note:'Create Sith Amulet, Armor, Talisman, and Weapon, Rapid Alchemy, Sith Alchemy Specialist, and the Cause Mutation abomination template.'}
+  ]
+};
+
+const EQUIP_CATEGORIES = [
+  {name:'Melee Weapons', note:'Advanced Melee, Exotic, Lightsabers, Simple, and Unarmed.'},
+  {name:'Ranged Weapons', note:'Pistols, Rifles, Exotic and Heavy Weapons, and Simple Ranged Weapons.'},
+  {name:'Explosives', note:'Grenades, mines, and other area effect ordnance.'},
+  {name:'Armor', note:'Light, medium, and heavy weight classes.'},
+  {name:'General Equipment', note:'Communication Devices, Computers and Storage, Detection and Surveillance, Life Support, Medical Gear, Survival Gear, Tools, and Weapon and Armor Accessories.'},
+  {name:'Trade Goods and Restricted Items', note:'Commodity baseline prices and the Licensed, Restricted, Military, and Illegal availability system.'}
+];
+
+
+/* ---------------------------------------------------------------------
+   CALCULATIONS
+--------------------------------------------------------------------- */
+function abilityMod(score) { return Math.floor((Number(score) - 10) / 2); }
+
+function finalAbility(ch, key) {
+  const base = Number(ch.abilities[key]) || 0;
+  const mod = (SPECIES[ch.species] && SPECIES[ch.species].mods[key]) || 0;
+  return base + mod;
+}
+
+function fmtMod(n) { return (n >= 0 ? '+' : '') + n; }
+
+function babFor(ch) {
+  if (ch.babOverride !== null && ch.babOverride !== undefined && ch.babOverride !== '') return Number(ch.babOverride);
+  const kind = CLASSES[ch.className].bab;
+  const lvl = Number(ch.level) || 1;
+  if (kind === 'full') return lvl;
+  return Math.floor(lvl * 0.75);
+}
+
+/* Feat and talent picker glue. The picker (swse_picker.js) owns the slot rules; the app owns species, class, level, abilities and skills. */
+const PICKER_CLASS = {jedi:'Jedi', noble:'Noble', scoundrel:'Scoundrel', scout:'Scout', soldier:'Soldier'};
+function pickerAvailable() { return typeof window !== 'undefined' && !!window.SWSEPicker && !!window.SWSE_DATA; }
+function pickerContext(ch) {
+  const abil = {};
+  ABILS.forEach(k => abil[k.charAt(0).toUpperCase() + k.slice(1)] = finalAbility(ch, k));
+  const lvl = Math.max(1, Math.min(20, Number(ch.level) || 1));
+  const trained = [];
+  (ch.skillsTrained || []).forEach(key => {
+    const sk = SKILLS.filter(x => x.key === key)[0];
+    if (!sk) return;
+    if (sk.key === 'knowledge') {
+      trained.push('Knowledge (any)');
+      if (pickerAvailable()) window.SWSE_DATA.skills.filter(n => n.indexOf('Knowledge') === 0).forEach(n => trained.push(n));
+    } else trained.push(sk.name);
+  });
+  return {
+    species: (SPECIES[ch.species] && SPECIES[ch.species].name) || 'Human',
+    droid: false,
+    abilities: abil,
+    plan: new Array(lvl).fill(PICKER_CLASS[ch.className] || 'Soldier'),
+    trained: trained
+  };
+}
+function pickerLists(ch) {
+  try {
+    if (!pickerAvailable()) return {feats: [], talents: []};
+    const ps = ch.pickerState || {}, c = pickerContext(ch);
+    const st = Object.assign(window.SWSEPicker.defaultState(), {species: c.species, abilities: c.abilities, plan: c.plan, skillPicks: c.trained, picks: ps.picks || {}});
+    return window.SWSEPicker.summarize(st);
+  } catch (e) { return {feats: [], talents: []}; }
+}
+function skillTrainingPicks(ch) {
+  try {
+    if (!pickerAvailable() || !ch.pickerState || !ch.pickerState.picks) return 0;
+    const D = window.SWSE_DATA, picks = ch.pickerState.picks;
+    return Object.keys(picks).filter(k => picks[k] && picks[k].feat != null && D.feats[picks[k].feat] && D.feats[picks[k].feat].name === 'Skill Training').length;
+  } catch (e) { return 0; }
+}
+
+function computeDerived(ch) {
+  const mods = {};
+  ABILS.forEach(k => mods[k] = abilityMod(finalAbility(ch, k)));
+  const cls = CLASSES[ch.className];
+  const spc = SPECIES[ch.species];
+  const lvl = Number(ch.level) || 1;
+
+  const hasOverride = ch.hpMaxOverride !== null && ch.hpMaxOverride !== '' && ch.hpMaxOverride !== undefined;
+  const hpMax = hasOverride
+    ? Number(ch.hpMaxOverride)
+    : cls.hpFirst + mods.con + (lvl > 1 ? (lvl - 1) * (Math.ceil(cls.hitDie / 2) + 1 + mods.con) : 0);
+
+  const misc = ch.defenseMisc || {reflex:0, fortitude:0, will:0};
+  const reflex = 10 + Math.max(lvl, Number(ch.armorBonus) || 0) + mods.dex + cls.defenseBonus.reflex + spc.defenseAll + (Number(misc.reflex) || 0);
+  const fortitude = 10 + lvl + mods.con + cls.defenseBonus.fortitude + spc.defenseAll + (Number(misc.fortitude) || 0);
+  const will = 10 + lvl + mods.wis + cls.defenseBonus.will + spc.defenseAll + (Number(misc.will) || 0);
+  const threshold = fortitude;
+  const bab = babFor(ch);
+  const fpMax = 5 + Math.floor(lvl / 2);
+  const trainedSlots = Math.max(1, cls.trainedSkills + mods.int) + skillTrainingPicks(ch);
+  const darkSideCap = finalAbility(ch, 'wis');
+
+  return { mods, hpMax, reflex, fortitude, will, threshold, bab, fpMax, trainedSlots, darkSideCap };
+}
+
+function hpNow(ch, d) { return (ch.hpCurrent === null || ch.hpCurrent === undefined) ? d.hpMax : ch.hpCurrent; }
+function fpNow(ch, d) { return (ch.forcePointsCurrent === null || ch.forcePointsCurrent === undefined) ? d.fpMax : ch.forcePointsCurrent; }
+
+function skillTotal(ch, s, d) {
+  const trained = (ch.skillsTrained || []).indexOf(s.key) !== -1;
+  return Math.floor((Number(ch.level) || 1) / 2) + d.mods[s.a] + (trained ? 5 : 0);
+}
+
+/* ---------------------------------------------------------------------
+   PDF EXPORT (jsPDF, letter size, two pages)
+--------------------------------------------------------------------- */
+function buildCharacterPdf(JsPDF, ch) {
+  const d = computeDerived(ch);
+  const doc = new JsPDF({unit: 'pt', format: 'letter'});
+  const W = 612, H = 792, M = 36, CW = W - 2 * M;
+  const GOLD = [150, 108, 30], INK = [28, 28, 28], GREY = [105, 105, 105], RULE = [170, 170, 170], SHADE = [225, 222, 212];
+  const hpCur = hpNow(ch, d), fpCur = fpNow(ch, d);
+  const spcName = SPECIES[ch.species].name, clsName = CLASSES[ch.className].name;
+
+  function txt(s, x, y, size, style, color, opts) {
+    doc.setFont('helvetica', style || 'normal');
+    doc.setFontSize(size || 10);
+    doc.setTextColor.apply(doc, color || INK);
+    doc.text(String(s), x, y, opts || {});
+  }
+  function box(x, y, w, h, lab, val, sub) {
+    doc.setDrawColor.apply(doc, RULE); doc.setLineWidth(0.8);
+    doc.rect(x, y, w, h);
+    txt(lab, x + 5, y + 10, 7.5, 'normal', GREY);
+    txt(val, x + w / 2, y + h - (sub ? 19 : 12), 15, 'bold', INK, {align: 'center'});
+    if (sub) txt(sub, x + w / 2, y + h - 7, 7.5, 'normal', GREY, {align: 'center'});
+  }
+  function heading(s, y) {
+    txt(s, M, y, 11, 'bold', GOLD);
+    doc.setDrawColor.apply(doc, GOLD); doc.setLineWidth(0.8);
+    doc.line(M, y + 4, W - M, y + 4);
+  }
+
+  /* ---- page 1 ---- */
+  txt(ch.name || 'Unnamed Character', M, 56, 24, 'bold', INK);
+  txt('Taris Campaign', W - M, 46, 8.5, 'normal', GREY, {align: 'right'});
+  txt('Saga Edition', W - M, 57, 8.5, 'normal', GREY, {align: 'right'});
+  txt(spcName + ' ' + clsName + ', level ' + ch.level + (ch.playerName ? '   Player: ' + ch.playerName : ''), M, 74, 10.5, 'normal', GREY);
+  doc.setDrawColor.apply(doc, GOLD); doc.setLineWidth(1.4); doc.line(M, 82, W - M, 82);
+
+  // abilities
+  let bw = (CW - 5 * 8) / 6;
+  ABILS.forEach((k, i) => {
+    box(M + i * (bw + 8), 94, bw, 50, ABIL_LABEL[k], finalAbility(ch, k), 'mod ' + fmtMod(d.mods[k]));
+  });
+
+  // combat
+  bw = (CW - 4 * 8) / 5;
+  const row1 = [['REFLEX', d.reflex], ['FORTITUDE', d.fortitude], ['WILL', d.will], ['DAMAGE THRESHOLD', d.threshold], ['BASE ATTACK', fmtMod(d.bab)]];
+  row1.forEach((r, i) => box(M + i * (bw + 8), 154, bw, 46, r[0], r[1]));
+  const row2 = [['HIT POINTS', hpCur + ' / ' + d.hpMax], ['FORCE POINTS', fpCur + ' / ' + d.fpMax], ['DARK SIDE SCORE', ch.darkSideScore + ' / ' + d.darkSideCap], ['CREDITS', String(ch.credits || 0)], ['SECOND WIND', ch.secondWindUsed ? 'used' : 'ready']];
+  row2.forEach((r, i) => box(M + i * (bw + 8), 208, bw, 46, r[0], r[1]));
+
+  // condition track
+  txt('Condition Track', M, 274, 9, 'bold', GOLD);
+  const cw = (CW - 5 * 4) / 6;
+  CONDITION_STEPS.forEach((s, i) => {
+    const x = M + i * (cw + 4);
+    doc.setDrawColor.apply(doc, RULE); doc.setLineWidth(0.8);
+    if (i === ch.conditionIndex) { doc.setFillColor.apply(doc, SHADE); doc.rect(x, 280, cw, 20, 'FD'); } else { doc.rect(x, 280, cw, 20); }
+    txt(s, x + cw / 2, 293, 8.5, i === ch.conditionIndex ? 'bold' : 'normal', INK, {align: 'center'});
+  });
+
+  // skills
+  heading('Skills', 326);
+  txt((ch.skillsTrained || []).length + ' of ' + d.trainedSlots + ' trained slots used', W - M, 326, 8, 'normal', GREY, {align: 'right'});
+  const colW = (CW - 20) / 2;
+  SKILLS.forEach((s, i) => {
+    const col = i < 9 ? 0 : 1, row = i % 9;
+    const x = M + col * (colW + 20), y = 346 + row * 17;
+    const trained = (ch.skillsTrained || []).indexOf(s.key) !== -1;
+    doc.setDrawColor.apply(doc, INK); doc.setLineWidth(0.7);
+    if (trained) { doc.setFillColor.apply(doc, INK); doc.rect(x, y - 7, 8, 8, 'F'); } else { doc.rect(x, y - 7, 8, 8); }
+    txt(s.name, x + 14, y, 9.5, trained ? 'bold' : 'normal', INK);
+    txt(ABIL_LABEL[s.a].slice(0, 3), x + colW - 40, y, 8, 'normal', GREY, {align: 'right'});
+    txt(fmtMod(skillTotal(ch, s, d)), x + colW, y, 10, 'bold', INK, {align: 'right'});
+    doc.setDrawColor.apply(doc, SHADE); doc.setLineWidth(0.5); doc.line(x, y + 4, x + colW, y + 4);
+  });
+  txt('Skill total = half level + ability modifier + 5 if trained, plus any misc bonuses. Roll d20 and add the total.', M, 346 + 9 * 17 + 6, 8, 'normal', GREY);
+
+  // tracking area
+  heading('Play Notes', 540);
+  for (let y = 566; y < 730; y += 20) {
+    doc.setDrawColor.apply(doc, SHADE); doc.setLineWidth(0.6); doc.line(M, y, W - M, y);
+  }
+
+  /* ---- page 2 and beyond (flowing) ---- */
+  doc.addPage();
+  let y = 56;
+  function need(h) { if (y + h > H - 50) { doc.addPage(); y = 56; } }
+  function section(title, items, asList) {
+    need(40);
+    heading(title, y); y += 20;
+    doc.setFont('helvetica', 'normal'); doc.setFontSize(10); doc.setTextColor.apply(doc, INK);
+    const list = (items && items.length) ? items : ['None listed'];
+    list.forEach(item => {
+      const lines = doc.splitTextToSize((asList ? '\u2022 ' : '') + item, CW - (asList ? 10 : 0));
+      need(lines.length * 13 + 4);
+      doc.setFont('helvetica', 'normal'); doc.setFontSize(10); doc.setTextColor.apply(doc, INK);
+      doc.text(lines, M + (asList ? 6 : 0), y);
+      y += lines.length * 13 + 3;
+    });
+    y += 10;
+  }
+  const pl = pickerLists(ch);
+  section('Feats', pl.feats.concat(ch.feats || []), true);
+  section('Talents and Force Powers', pl.talents.concat(ch.talents || []), true);
+  section('Equipment', ch.equipment, true);
+  const bg = ch.background || {};
+  section('Reason on Taris', bg.reason ? [bg.reason] : [], false);
+  section('One Want', bg.want ? [bg.want] : [], false);
+  section('One Person or Place Cared About', bg.person ? [bg.person] : [], false);
+  if (ch.notes) section('Other Notes', [ch.notes], false);
+
+  const pages = doc.getNumberOfPages();
+  for (let p = 1; p <= pages; p++) {
+    doc.setPage(p);
+    txt((ch.name || 'Unnamed') + '   Taris Character Forge', M, H - 24, 8, 'normal', GREY);
+    txt('Page ' + p + ' of ' + pages, W - M, H - 24, 8, 'normal', GREY, {align: 'right'});
+  }
+  return doc;
+}
+
+/*CORE_END*/
+/* ---------------------------------------------------------------------
+   CONFIG
+   Paste the Web App URL from your Apps Script deployment below.
+   Leave it as is to run in local mode (characters stay in this browser).
+--------------------------------------------------------------------- */
+const APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxX5QwmsyqtNF1ApWU5E-4MTrMiKwJBULD4C2uwpb0it0iyyRVCr4hIbYSxpKHTn6fftA/exec";
+const REMOTE = APPS_SCRIPT_URL.indexOf('https://') === 0;
+
+const KEY_USER = 'tcf_user';
+const KEY_CACHE = 'tcf_cache_';
+const KEY_LOCAL = 'tcf_local_chars';
+const KEY_GM = 'tcf_gm';
+
+const state = {
+  view: 'login',
+  user: null,          // {name, hash, display}
+  gm: null,            // GM passcode once unlocked (kept for this browser session only)
+  chars: [],           // this player's characters (or local characters in local mode)
+  roster: [],          // every character, GM only
+  draft: null,
+  isNew: false,
+  editingAsGm: false,
+  refFilter: '',
+  busy: '',
+  loginError: '',
+  saveNote: '',
+  rollLog: []
+};
+
+/* ---------------------------------------------------------------------
+   SMALL UTILITIES
+--------------------------------------------------------------------- */
+function escapeHtml(s) { return (s == null ? '' : String(s)).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
+function rid() { return 'c_' + Math.random().toString(36).slice(2, 10) + Date.now().toString(36); }
+function timeAgo(ts) {
+  if (!ts) return 'never';
+  const s = Math.floor((Date.now() - ts) / 1000);
+  if (s < 60) return 'just now';
+  if (s < 3600) return Math.floor(s / 60) + ' min ago';
+  if (s < 86400) return Math.floor(s / 3600) + ' hr ago';
+  return Math.floor(s / 86400) + ' day(s) ago';
+}
+function lsGet(k, fallback) { try { const v = localStorage.getItem(k); return v ? JSON.parse(v) : fallback; } catch (e) { return fallback; } }
+function lsSet(k, v) { try { localStorage.setItem(k, JSON.stringify(v)); } catch (e) {} }
+
+async function sha256Hex(str) {
+  try {
+    const buf = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(str));
+    return Array.from(new Uint8Array(buf)).map(b => b.toString(16).padStart(2, '0')).join('');
+  } catch (e) {
+    let h = 5381;
+    for (let i = 0; i < str.length; i++) h = ((h << 5) + h + str.charCodeAt(i)) >>> 0;
+    return 'x' + h.toString(16);
+  }
+}
+
+/* ---------------------------------------------------------------------
+   NETWORK (JSONP, same pattern as the TJAG Tracker)
+--------------------------------------------------------------------- */
+function jsonp(params, timeoutMs) {
+  return new Promise((resolve, reject) => {
+    const cb = 'tcf_' + Date.now().toString(36) + Math.floor(Math.random() * 1e6);
+    const s = document.createElement('script');
+    const timer = setTimeout(() => { cleanup(); reject(new Error('timeout')); }, timeoutMs || 25000);
+    function cleanup() { clearTimeout(timer); delete window[cb]; if (s.parentNode) s.parentNode.removeChild(s); }
+    window[cb] = data => { cleanup(); resolve(data); };
+    s.onerror = () => { cleanup(); reject(new Error('network')); };
+    s.src = APPS_SCRIPT_URL + '?' + new URLSearchParams(Object.assign({}, params, {callback: cb})).toString();
+    document.head.appendChild(s);
+  });
+}
+
+function authParams(asGm) {
+  if (asGm && state.gm) return {gm: state.gm};
+  return {n: state.user.name, h: state.user.hash, gm: state.gm || ''};
+}
+
+async function remoteSave(ch, asGm) {
+  const json = JSON.stringify(ch);
+  const size = 1200, parts = [];
+  for (let i = 0; i < json.length; i += size) parts.push(json.slice(i, i + size));
+  const uid = 'u' + Math.random().toString(36).slice(2, 12) + Date.now().toString(36);
+  let last = null;
+  for (let i = 0; i < parts.length; i++) {
+    last = await jsonp(Object.assign({action: 'saveChunk', uid: uid, i: i, n_chunks: parts.length, part: parts[i]}, authParams(asGm)));
+    if (!last || !last.ok) throw new Error((last && last.error) || 'save_failed');
+  }
+  return last;
+}
+
+const ERRORS = {
+  no_such_player: 'No player with that name yet. Use "New player" to create one.',
+  bad_pin: 'That PIN does not match this name.',
+  name_taken: 'That name is already taken with a different PIN.',
+  bad_name: 'Names can use letters, numbers, spaces, periods, and apostrophes, 2 to 30 characters.',
+  missing_credentials: 'Enter both a name and a PIN.',
+  not_owner: 'That character belongs to another player.',
+  bad_gm_code: 'That GM passcode is not right.',
+  timeout: 'The spreadsheet did not answer in time. Try again in a moment.',
+  network: 'Could not reach the spreadsheet. Check the web app URL and your connection.'
+};
+function errText(e) { const code = e && e.message ? e.message : String(e); return ERRORS[code] || ('Something went wrong (' + code + ').'); }
+
+/* ---------------------------------------------------------------------
+   SESSION AND DATA LOADING
+--------------------------------------------------------------------- */
+function saveCache() { if (state.user) lsSet(KEY_CACHE + state.user.name.toLowerCase(), state.chars); else lsSet(KEY_LOCAL, state.chars); }
+
+async function loadMine() {
+  if (!REMOTE) { state.chars = lsGet(KEY_LOCAL, []); return; }
+  state.busy = 'Loading your characters...'; render();
+  try {
+    const r = await jsonp(Object.assign({action: 'list'}, authParams(false)));
+    if (!r.ok) throw new Error(r.error);
+    state.chars = r.characters;
+    saveCache();
+  } catch (e) {
+    state.saveNote = 'Could not refresh from the spreadsheet (' + errText(e) + '). Showing the last copy stored on this device.';
+  }
+  state.busy = '';
+  render();
+}
+
+async function loadRoster() {
+  if (!state.gm) return;
+  state.busy = 'Loading the party roster...'; render();
+  try {
+    const r = await jsonp({action: 'gmList', gm: state.gm});
+    if (!r.ok) throw new Error(r.error);
+    state.roster = r.characters;
+  } catch (e) { state.saveNote = errText(e); }
+  state.busy = '';
+  render();
+}
+
+async function doLogin(create) {
+  const name = document.getElementById('loginName').value.trim();
+  const pin = document.getElementById('loginPin').value;
+  const remember = document.getElementById('loginRemember').checked;
+  state.loginError = '';
+  if (!name || !pin) { state.loginError = ERRORS.missing_credentials; render(); return; }
+  state.busy = 'Signing in...'; render();
+  try {
+    const hash = await sha256Hex(name.toLowerCase() + ':' + pin);
+    const r = await jsonp({action: 'login', n: name, h: hash, create: create ? '1' : '0'});
+    if (!r.ok) throw new Error(r.error);
+    state.user = {name: name, hash: hash, display: r.displayName || name};
+    if (remember) lsSet(KEY_USER, state.user);
+    state.chars = lsGet(KEY_CACHE + name.toLowerCase(), []);
+    state.view = 'home';
+    state.busy = '';
+    render();
+    loadMine();
+  } catch (e) {
+    state.busy = '';
+    state.loginError = errText(e);
+    render();
+  }
+}
+
+function signOut() {
+  localStorage.removeItem(KEY_USER);
+  sessionStorage.removeItem(KEY_GM);
+  state.user = null; state.gm = null; state.chars = []; state.roster = []; state.draft = null;
+  state.view = 'login';
+  render();
+}
+
+async function gmSignIn() {
+  const code = window.prompt('GM passcode:');
+  if (!code) return;
+  state.busy = 'Checking passcode...'; render();
+  try {
+    const r = await jsonp({action: 'gmList', gm: code});
+    if (!r.ok) throw new Error(r.error);
+    state.gm = code;
+    sessionStorage.setItem(KEY_GM, code);
+    state.roster = r.characters;
+    state.busy = '';
+    state.view = 'roster';
+    render();
+  } catch (e) {
+    state.busy = '';
+    state.saveNote = errText(e);
+    render();
+  }
+}
+
+/* ---------------------------------------------------------------------
+   CHARACTER MODEL
+--------------------------------------------------------------------- */
+function blankCharacter() {
+  return {
+    id: null,
+    name: '',
+    playerName: state.user ? state.user.display : '',
+    species: 'human',
+    className: 'soldier',
+    level: 1,
+    abilities: {str:10, dex:10, con:10, int:10, wis:10, cha:10},
+    hpCurrent: null,
+    hpMaxOverride: null,
+    forcePointsCurrent: null,
+    darkSideScore: 0,
+    conditionIndex: 0,
+    defenseMisc: {reflex:0, fortitude:0, will:0},
+    armorBonus: 0,
+    attackMisc: 0,
+    babOverride: null,
+    skillsTrained: [],
+    feats: [],
+    talents: [],
+    equipment: [],
+    credits: 0,
+    background: {reason:'', want:'', person:''},
+    notes: '',
+    secondWindUsed: false,
+    createdAt: Date.now(),
+    updatedAt: Date.now()
+  };
+}
+
+async function persist(ch, asGm) {
+  ch.updatedAt = Date.now();
+  if (!ch.id) ch.id = rid();
+  const d = computeDerived(ch);
+  ch._s = {hpCur: hpNow(ch, d), hpMax: d.hpMax, cond: CONDITION_STEPS[ch.conditionIndex]};
+  const copy = JSON.parse(JSON.stringify(ch));
+  if (REMOTE) await remoteSave(copy, asGm);
+  if (!asGm) {
+    const i = state.chars.findIndex(c => c.id === ch.id);
+    if (i === -1) state.chars.push(copy); else state.chars[i] = copy;
+    saveCache();
+  } else {
+    const i = state.roster.findIndex(c => c.id === ch.id);
+    if (i !== -1) state.roster[i] = copy;
+  }
+}
+
+/* ---------------------------------------------------------------------
+   RENDER: SHELL
+--------------------------------------------------------------------- */
+function setView(v) {
+  if (REMOTE && !state.user && (v === 'home' || v === 'new' || v === 'edit')) v = 'login';
+  if (v === 'new') { state.draft = blankCharacter(); state.isNew = true; state.editingAsGm = false; }
+  state.view = v; state.saveNote = '';
+  render();
+  window.scrollTo(0, 0);
+  if (v === 'home' && state.user) loadMine();
+  if (v === 'roster' && state.gm) loadRoster();
+}
+
+function render() {
+  const tabs = [];
+  if (!REMOTE || state.user) {
+    tabs.push({k:'home', t:'My Characters'});
+    tabs.push({k:'new', t:'+ New Character'});
+  }
+  tabs.push({k:'reference', t:'Rules Reference'});
+  if (state.gm) tabs.push({k:'roster', t:'GM Roster'});
+  document.getElementById('tabs').innerHTML = tabs.map(t =>
+    `<button class="tab ${(state.view === t.k || (t.k === 'home' && state.view === 'edit')) ? 'active' : ''}" onclick="setView('${t.k}')">${t.t}</button>`).join('');
+
+  let who = '';
+  if (REMOTE && state.user) who = `Signed in as <strong>${escapeHtml(state.user.display)}</strong> <button class="linkbtn" onclick="signOut()">Sign out</button>`;
+  if (!REMOTE) who = 'Local mode: characters stay in this browser';
+  if (REMOTE && !state.gm) who += ` <button class="linkbtn" onclick="gmSignIn()">GM</button>`;
+  document.getElementById('who').innerHTML = who;
+
+  const app = document.getElementById('app');
+  const busy = state.busy ? `<div class="banner">${escapeHtml(state.busy)}</div>` : '';
+  if (state.view === 'login' && REMOTE && !state.user) app.innerHTML = renderLogin();
+  else if (state.view === 'home') app.innerHTML = busy + renderHome();
+  else if (state.view === 'new' || state.view === 'edit') { app.innerHTML = renderEditor(); refreshDerived(); mountPicker(); }
+  else if (state.view === 'roster') app.innerHTML = busy + renderRoster();
+  else if (state.view === 'reference') app.innerHTML = renderReference();
+  else app.innerHTML = busy + renderHome();
+}
+
+function renderLogin() {
+  return `
+  <div class="panel loginbox">
+    <h2>Sign in to see your characters</h2>
+    <p>Pick a player name and a PIN. Use the same name and PIN on any phone or computer and your characters follow you. First time here? Choose a name and PIN, then press New player.</p>
+    <div class="field"><label>Player name</label><input id="loginName" autocomplete="username" value="${escapeHtml(state.user ? state.user.name : '')}"></div>
+    <div class="field"><label>PIN</label><input id="loginPin" type="password" autocomplete="current-password" onkeydown="if(event.key==='Enter')doLogin(false)"></div>
+    <div class="field"><label><input id="loginRemember" type="checkbox" checked style="width:auto;"> Keep me signed in on this device</label></div>
+    ${state.loginError ? `<div class="banner warn">${escapeHtml(state.loginError)}</div>` : ''}
+    ${state.busy ? `<div class="banner">${escapeHtml(state.busy)}</div>` : ''}
+    <div class="btnrow">
+      <button class="btn primary" onclick="doLogin(false)">Sign in</button>
+      <button class="btn" onclick="doLogin(true)">New player</button>
+    </div>
+    <p class="hint">This is a light table pass, not real security. Anyone who can open the party spreadsheet can read every sheet in it, so do not reuse a real password. Forgot your PIN? Ask your GM to delete your row in the Players tab, then make a new one.</p>
+  </div>`;
+}
+
+function localBanner() {
+  if (REMOTE) return '';
+  return `<div class="banner warn">Local mode: this copy is not connected to a spreadsheet yet, so characters live only in this browser on this device. To connect it, follow the setup steps and paste your web app URL at the top of the script.</div>`;
+}
+
+function cardHtml(c, showOwner) {
+  const d = computeDerived(c);
+  return `<div class="card" onclick="openCharacter('${escapeHtml(c.id)}', ${showOwner ? 'true' : 'false'})">
+    <h4>${escapeHtml(c.name || 'Unnamed')}</h4>
+    <div class="meta">${SPECIES[c.species].name} ${CLASSES[c.className].name}, level ${c.level}${showOwner && c.ownerName ? ' (' + escapeHtml(c.ownerName) + ')' : ''}</div>
+    <div class="row"><span>Hit Points</span><span>${hpNow(c, d)} / ${d.hpMax}</span></div>
+    <div class="row"><span>Condition</span><span>${CONDITION_STEPS[c.conditionIndex]}</span></div>
+    <div class="row"><span>Credits</span><span>${escapeHtml(c.credits)}</span></div>
+    <div class="btnrow"><button class="btn small" onclick="event.stopPropagation(); pdfFor('${escapeHtml(c.id)}', ${showOwner ? 'true' : 'false'})">Download PDF</button></div>
+  </div>`;
+}
+
+function renderHome() {
+  const note = state.saveNote ? `<div class="banner warn">${escapeHtml(state.saveNote)}</div>` : '';
+  if (!state.chars.length) {
+    return localBanner() + note + `<div class="empty"><p>No characters yet.</p><button class="btn primary" onclick="setView('new')">+ New Character</button></div>`;
+  }
+  return localBanner() + note + `<div class="cards">${state.chars.map(c => cardHtml(c, false)).join('')}</div>
+    <div class="btnrow" style="margin-top:18px;"><button class="btn primary" onclick="setView('new')">+ New Character</button></div>`;
+}
+
+function renderRoster() {
+  const note = state.saveNote ? `<div class="banner warn">${escapeHtml(state.saveNote)}</div>` : '';
+  const list = state.roster.slice().sort((a, b) => (a.ownerName || '').localeCompare(b.ownerName || '') || (a.name || '').localeCompare(b.name || ''));
+  const banner = `<div class="banner gold">GM view: every character from every player. The same data is in the Characters tab of your Google Sheet, where you can sort and filter it.</div>`;
+  if (!list.length) return banner + note + `<div class="empty"><p>No characters have been saved yet.</p></div>`;
+  return banner + note + `<div class="cards">${list.map(c => cardHtml(c, true)).join('')}</div>`;
+}
+
+function findChar(id, fromRoster) {
+  return (fromRoster ? state.roster : state.chars).find(c => c.id === id);
+}
+
+function openCharacter(id, fromRoster) {
+  const found = findChar(id, fromRoster);
+  if (!found) return;
+  state.draft = JSON.parse(JSON.stringify(found));
+  state.isNew = false;
+  state.editingAsGm = !!fromRoster;
+  setView('edit');
+}
+
+function pdfFor(id, fromRoster) {
+  const found = findChar(id, fromRoster);
+  if (found) downloadPdf(found);
+}
+
+function downloadPdf(ch) {
+  if (!window.jspdf || !window.jspdf.jsPDF) { alert('The PDF library did not load. Check your connection and try again.'); return; }
+  const doc = buildCharacterPdf(window.jspdf.jsPDF, ch);
+  const fname = (ch.name || 'Character').replace(/[^A-Za-z0-9]+/g, '_') + '_Character_Sheet.pdf';
+  doc.save(fname);
+}
+
+/* ---------------------------------------------------------------------
+   RENDER: EDITOR
+   Inputs update state and refresh the readouts in place, so the page
+   never rebuilds under your cursor while you type.
+--------------------------------------------------------------------- */
+function renderEditor() {
+  if (!state.draft) state.draft = blankCharacter();
+  const ch = state.draft;
+  const isNew = state.isNew;
+
+  return `
+  <div id="editorRoot" class="split">
+    <div>
+      ${localBanner()}
+      <div class="panel">
+        <h2>Identity</h2>
+        <div class="grid c2">
+          <div class="field"><label>Character name</label><input value="${escapeHtml(ch.name)}" oninput="ch_text('name', this.value)"></div>
+          <div class="field"><label>Player</label><input value="${escapeHtml(ch.playerName)}" oninput="ch_text('playerName', this.value)"></div>
+        </div>
+        <div class="grid c3">
+          <div class="field"><label>Species</label>
+            <select onchange="ch_pick('species', this.value)">
+              ${Object.keys(SPECIES).map(k => `<option value="${k}" ${ch.species === k ? 'selected' : ''}>${SPECIES[k].name}</option>`).join('')}
+            </select></div>
+          <div class="field"><label>Class</label>
+            <select onchange="ch_pick('className', this.value)">
+              ${Object.keys(CLASSES).map(k => `<option value="${k}" ${ch.className === k ? 'selected' : ''}>${CLASSES[k].name}</option>`).join('')}
+            </select></div>
+          <div class="field"><label>Level</label><input type="number" min="1" value="${ch.level}" oninput="ch_num('level', this.value)"></div>
+        </div>
+        <p class="hint">${escapeHtml(SPECIES[ch.species].name)}: ${escapeHtml(SPECIES[ch.species].note)}${SPECIES[ch.species].bonusFeat ? ' Bonus: ' + escapeHtml(SPECIES[ch.species].bonusFeat) + '.' : ''}</p>
+        <p class="hint">${escapeHtml(CLASSES[ch.className].name)}: ${escapeHtml(CLASSES[ch.className].note)}</p>
+      </div>
+
+      <div class="panel">
+        <h2>Ability Scores <span class="note">species modifiers applied automatically</span></h2>
+        <div class="grid c6">
+          ${ABILS.map(k => `
+            <div class="field"><label>${ABIL_LABEL[k]}</label>
+              <input type="number" value="${ch.abilities[k]}" oninput="ch_abil('${k}', this.value)">
+              <div class="hint" data-d="af_${k}"></div></div>`).join('')}
+        </div>
+        <div class="btnrow"><button class="btn small" onclick="ch_standardArray()">Fill standard array (15, 14, 13, 12, 10, 8)</button>
+          <button class="btn small" onclick="rollAbilityScores()">Roll 4d6, drop lowest</button></div>
+        <p class="hint">Rolled scores land in Str, Dex, Con, Int, Wis, Cha order; retype any number to move it. Use whichever method your table agrees on, standard array or rolled.</p>
+      </div>
+
+      <div class="panel">
+        <h2>Defenses, Hit Points, and Attack</h2>
+        <div class="grid c4">
+          <div class="stat"><div class="n" data-d="reflex"></div><div class="l">Reflex<span class="info" title="10 + the higher of level or armor bonus, + Dex modifier, + class bonus, + species bonus, + misc.">?</span></div></div>
+          <div class="stat"><div class="n" data-d="fortitude"></div><div class="l">Fortitude<span class="info" title="10 + level + Con modifier + class bonus + species bonus + misc.">?</span></div></div>
+          <div class="stat"><div class="n" data-d="will"></div><div class="l">Will<span class="info" title="10 + level + Wis modifier + class bonus + species bonus + misc.">?</span></div></div>
+          <div class="stat"><div class="n" data-d="threshold"></div><div class="l">Damage Threshold<span class="info" title="Shown as equal to Fortitude Defense, the common Saga Edition rule.">?</span></div></div>
+        </div>
+        <div class="grid c3" style="margin-top:12px;">
+          <div class="field"><label>Armor bonus (if worn)</label><input type="number" value="${ch.armorBonus}" oninput="ch_num('armorBonus', this.value)"></div>
+          <div class="field"><label>Base Attack Bonus<span class="info" title="Jedi and Soldier equal level; Noble, Scoundrel, and Scout three quarters of level, rounded down. Type a number to override, for example for a multiclass character.">?</span></label>
+            <input type="number" value="${ch.babOverride === null ? '' : ch.babOverride}" data-ph="bab" oninput="ch_orNull('babOverride', this.value)"></div>
+          <div class="field"><label>Max hit points<span class="info" title="Class hit points at 1st level plus Con modifier. Above 1st level this uses an average per level, so type your rolled total to override.">?</span></label>
+            <input type="number" value="${ch.hpMaxOverride === null ? '' : ch.hpMaxOverride}" data-ph="hp" oninput="ch_orNull('hpMaxOverride', this.value)"></div>
+        </div>
+        <div class="grid c3">
+          <div class="field"><label>Misc Reflex</label><input type="number" value="${ch.defenseMisc.reflex}" oninput="ch_misc('reflex', this.value)"></div>
+          <div class="field"><label>Misc Fortitude</label><input type="number" value="${ch.defenseMisc.fortitude}" oninput="ch_misc('fortitude', this.value)"></div>
+          <div class="field"><label>Misc Will</label><input type="number" value="${ch.defenseMisc.will}" oninput="ch_misc('will', this.value)"></div>
+        </div>
+        <div class="grid c2" style="margin-top:6px;">
+          <div class="field"><label>Attack misc bonus (weapon, feats)</label><input type="number" value="${ch.attackMisc || 0}" oninput="ch_num('attackMisc', this.value)"></div>
+          <div class="field"><label>Attack rolls<span class="info" title="d20 + Base Attack Bonus + Str modifier (melee) or Dex modifier (ranged) + your misc bonus.">?</span></label>
+            <div class="btnrow" style="margin-top:0;"><button class="btn small" onclick="rollAttack('melee')">Roll melee</button><button class="btn small" onclick="rollAttack('ranged')">Roll ranged</button></div></div>
+        </div>
+      </div>
+
+      <div class="panel">
+        <h2>Hit Points and Condition Track</h2>
+        <div class="grid c3">
+          <div class="stat"><div class="n" data-d="hpLine"></div><div class="l">Current / Max HP</div></div>
+          <div class="field"><label>Adjust current HP</label>
+            <div class="btnrow">
+              <button class="btn small" onclick="ch_hp(-5)">-5</button><button class="btn small" onclick="ch_hp(-1)">-1</button>
+              <button class="btn small" onclick="ch_hp(1)">+1</button><button class="btn small" onclick="ch_hp(5)">+5</button>
+              <button class="btn small" onclick="ch_hpFull()">Full heal</button>
+            </div></div>
+          <div class="field"><label>Second Wind<span class="info" title="Once per day, swift action, usable at half hit points or less. Heals one quarter of max hit points (rounded down) or your Constitution score, whichever is more.">?</span></label>
+            <div class="btnrow"><button id="swBtn" class="btn small" onclick="ch_secondWind()">Use Second Wind</button>
+              <button class="btn small" onclick="ch_newDay()">New day</button></div>
+            <div class="hint" id="swHint"></div></div>
+        </div>
+        <div class="field" style="margin-top:10px;"><label>Condition Track<span class="info" title="Recovering one step costs 3 swift actions on the recover action, which can be split across consecutive rounds.">?</span></label>
+          <div class="condition-track">${CONDITION_STEPS.map((s, i) => `<div class="condition-step" data-i="${i}" onclick="ch_cond(${i})">${s}</div>`).join('')}</div></div>
+      </div>
+
+      <div class="panel">
+        <h2>Force Points and Dark Side Score</h2>
+        <div class="grid c2">
+          <div><div class="stat"><div class="n" data-d="fpLine"></div><div class="l">Force Points<span class="info" title="Pool is 5 plus half character level, rounded down. Spend one as a free action, once per round, to roll 1d6 (2d6 at 8th level, 3d6 at 15th, keeping the higher single die). Resets to full on level up.">?</span></div></div>
+            <div class="btnrow"><button class="btn small" onclick="ch_fp(-1)">Spend 1</button><button class="btn small" onclick="rollForcePoint()">Spend 1 and roll</button><button class="btn small" onclick="ch_fpFull()">Reset to max</button></div></div>
+          <div><div class="stat"><div class="n" data-d="darkLine"></div><div class="l">Dark Side Score<span class="info" title="Capped at your Wisdom score. On reaching that cap a character becomes fully dark side dominant.">?</span></div></div>
+            <div class="btnrow"><button class="btn small" onclick="ch_dark(-1)">-1</button><button class="btn small" onclick="ch_dark(1)">+1</button></div></div>
+        </div>
+        <p class="hint">Every character has Force Points, not just Force users. Spend one to add a bonus die to a roll. Force powers and talents are separate and need the Force Sensitivity feat, which Jedi get for free.</p>
+      </div>
+
+      <div class="panel">
+        <h2>Skills <span class="note" data-d="trainedLine"></span></h2>
+        <table>
+          <tr><th>Skill</th><th>Ability</th><th>Trained</th><th>Total<span class="info" title="d20 + half level (rounded down) + ability modifier + 5 if trained + misc.">?</span></th><th></th></tr>
+          ${SKILLS.map(s => `<tr><td>${s.name}</td><td>${ABIL_LABEL[s.a].slice(0, 3)}</td>
+            <td><input type="checkbox" style="width:auto;" ${ch.skillsTrained.includes(s.key) ? 'checked' : ''} onchange="ch_skill('${s.key}')"></td>
+            <td data-d="sk_${s.key}"></td>
+            <td><button class="btn small" onclick="rollSkill('${s.key}')">Roll</button></td></tr>`).join('')}
+        </table>
+      </div>
+
+      ${pickerAvailable() ? `
+      <div class="panel">
+        <h2>Feats and Talents <span class="note">slots follow your class and level</span></h2>
+        <p class="hint">Feats come from character level (1st, 3rd, 6th, 9th, 12th, 15th, 18th, plus a Human bonus feat). Bonus feats come at every even class level and talents at every odd class level, limited to your class's lists. Change class, level, ability scores or trained skills above and this list updates.</p>
+        <div id="swPicker"></div>
+      </div>
+
+      <div class="panel">
+        <h2>Other Feats</h2>
+        ${tagList(ch.feats, 'feats')}
+        <div class="btnrow"><input id="featInput" placeholder="Feat name" style="flex:1; min-width:160px;" onkeydown="if(event.key==='Enter')ch_addTag('feats','featInput')">
+          <button class="btn small" onclick="ch_addTag('feats','featInput')">Add feat</button></div>
+        <p class="hint">For feats granted by species or by the GM, such as Miraluka Force Training. These print on the sheet after the feats above.</p>
+      </div>
+
+      <div class="panel">
+        <h2>Other Talents and Force Powers</h2>
+        ${tagList(ch.talents, 'talents')}
+        <div class="btnrow"><select id="talentTreeSelect" onchange="populateTalentItems()"><option value="">Choose a talent tree or power list...</option>${talentTreeOptions(ch.className)}</select></div>
+        <div class="btnrow"><select id="talentItemSelect" style="flex:1;"><option value="">(pick a specific item, or leave blank to add the whole tree)</option></select>
+          <button class="btn small" onclick="addTalentFromPicker()">Add</button></div>
+        <p class="hint">For Force powers and for trees not in the list above. Force Sensitive characters can take a Force talent in place of a class talent. Check the source booklet named in the Rules Reference tab for the exact talents inside a tree.</p>
+      </div>
+      ` : `      <div class="panel">
+        <h2>Feats</h2>
+        ${tagList(ch.feats, 'feats')}
+        <div class="btnrow"><input id="featInput" placeholder="Feat name" style="flex:1; min-width:160px;" onkeydown="if(event.key==='Enter')ch_addTag('feats','featInput')">
+          <button class="btn small" onclick="ch_addTag('feats','featInput')">Add feat</button></div>
+        <p class="hint">Feats come at 1st, 3rd, 6th, 9th, 12th, 15th, and 18th level, plus each class's bonus feat schedule, plus one extra feat at 1st level for a Human.</p>
+      </div>
+
+      <div class="panel">
+        <h2>Talents and Force Powers</h2>
+        ${tagList(ch.talents, 'talents')}
+        <div class="btnrow"><select id="talentTreeSelect" onchange="populateTalentItems()"><option value="">Choose a talent tree or power list...</option>${talentTreeOptions(ch.className)}</select></div>
+        <div class="btnrow"><select id="talentItemSelect" style="flex:1;"><option value="">(pick a specific item, or leave blank to add the whole tree)</option></select>
+          <button class="btn small" onclick="addTalentFromPicker()">Add</button></div>
+        <p class="hint">Talents come at 1st level and every odd level after. For trees without individual items listed, add the tree by name and check the source booklet named in the Rules Reference tab for the exact talents inside.</p>
+      </div>
+
+`}
+
+      <div class="panel">
+        <h2>Equipment and Credits</h2>
+        <div class="field"><label>Credits</label><input type="number" value="${escapeHtml(ch.credits)}" oninput="ch_num('credits', this.value)">
+          <p class="hint">Starting formula for ${CLASSES[ch.className].name}: ${CLASSES[ch.className].credits}.</p>
+          <div class="btnrow"><button class="btn small" onclick="rollCredits()">Roll starting credits</button></div></div>
+        ${tagList(ch.equipment, 'equipment')}
+        <div class="btnrow"><input id="equipInput" placeholder="Item name" style="flex:1; min-width:160px;" onkeydown="if(event.key==='Enter')ch_addTag('equipment','equipInput')">
+          <button class="btn small" onclick="ch_addTag('equipment','equipInput')">Add item</button></div>
+        <p class="hint">Exact prices and stats live in the Arms and Equipment compendium. See Rules Reference for its categories.</p>
+      </div>
+
+      <div class="panel">
+        <h2>Background</h2>
+        <div class="field"><label>Reason on Taris</label><textarea oninput="ch_bg('reason', this.value)">${escapeHtml(ch.background.reason)}</textarea></div>
+        <div class="field"><label>One want</label><textarea oninput="ch_bg('want', this.value)">${escapeHtml(ch.background.want)}</textarea></div>
+        <div class="field"><label>One person or place cared about</label><textarea oninput="ch_bg('person', this.value)">${escapeHtml(ch.background.person)}</textarea></div>
+        <div class="field"><label>Other notes</label><textarea oninput="ch_text('notes', this.value)">${escapeHtml(ch.notes)}</textarea></div>
+      </div>
+    </div>
+
+    <div class="sticky-side">
+      <div class="panel">
+        <h2>${isNew ? 'Save this character' : 'Save changes'}</h2>
+        <p id="saveNote">${escapeHtml(state.saveNote || (isNew ? 'Not saved yet.' : 'Last saved ' + timeAgo(ch.updatedAt) + '.'))}</p>
+        <div class="btnrow">
+          <button class="btn primary" id="saveBtn" onclick="ch_save()">${isNew ? 'Create character' : 'Save'}</button>
+          <button class="btn" onclick="ch_back()">Back</button>
+        </div>
+        <div class="btnrow"><button class="btn" onclick="downloadPdf(state.draft)">Download PDF</button>
+          ${!isNew ? `<button class="btn danger" onclick="ch_delete()">Delete</button>` : ''}</div>
+        <p class="hint">The PDF reflects what is on screen right now, saved or not.</p>
+      </div>
+      <div class="panel">
+        <h2>Quick summary</h2>
+        <p><strong data-d="sumName"></strong><br><span data-d="sum1"></span><br><span data-d="sum2"></span></p>
+      </div>
+      <div class="panel">
+        <h2>Dice and Roll Log</h2>
+        <div class="dicerow">${[4, 6, 8, 10, 12, 20, 100].map(n => `<button class="btn small" onclick="rollDie(${n})">d${n}</button>`).join('')}</div>
+        <div class="btnrow"><input id="trayExpr" placeholder="2d6+3" style="flex:1; min-width:90px;" onkeydown="if(event.key==='Enter')rollExpr()">
+          <button class="btn small" onclick="rollExpr()">Roll</button></div>
+        <div id="rollLog">${rollLogHtml()}</div>
+      </div>
+    </div>
+  </div>`;
+}
+
+function tagList(arr, field) {
+  if (!arr.length) return `<p class="hint">None added yet.</p>`;
+  return `<div class="tags">${arr.map((v, i) => `<span class="tag">${escapeHtml(v)}<button onclick="ch_removeTag('${field}', ${i})">&times;</button></span>`).join('')}</div>`;
+}
+
+function talentTreeOptions(className) {
+  const lists = (TALENT_CATALOG[className] || []).concat(TALENT_CATALOG.cross);
+  return lists.map((t, i) => `<option value="${className}:${i}">${escapeHtml(t.tree)}</option>`).join('');
+}
+function pickerEntry() {
+  const v = document.getElementById('talentTreeSelect').value;
+  if (!v) return null;
+  const parts = v.split(':');
+  return (TALENT_CATALOG[parts[0]] || []).concat(TALENT_CATALOG.cross)[Number(parts[1])];
+}
+function populateTalentItems() {
+  const sel = document.getElementById('talentItemSelect');
+  sel.innerHTML = '<option value="">(pick a specific item, or leave blank to add the whole tree)</option>';
+  const e = pickerEntry();
+  if (e && e.items) e.items.forEach(it => { const o = document.createElement('option'); o.value = it; o.textContent = it; sel.appendChild(o); });
+}
+function addTalentFromPicker() {
+  const e = pickerEntry();
+  if (!e) return;
+  const item = document.getElementById('talentItemSelect').value;
+  state.draft.talents.push(item ? item + ' (' + e.tree + ')' : e.tree);
+  reEditor();
+}
+
+/* ---------- in place readout refresh ---------- */
+function refreshDerived() {
+  const ch = state.draft;
+  if (!ch || !document.getElementById('editorRoot')) return;
+  const d = computeDerived(ch), hp = hpNow(ch, d), fp = fpNow(ch, d);
+  const m = {
+    reflex: d.reflex, fortitude: d.fortitude, will: d.will, threshold: d.threshold,
+    hpLine: hp + ' / ' + d.hpMax, fpLine: fp + ' / ' + d.fpMax, darkLine: ch.darkSideScore + ' / ' + d.darkSideCap,
+    trainedLine: ch.skillsTrained.length + ' of ' + d.trainedSlots + ' trained slots used',
+    sumName: (ch.name || 'Unnamed') + ', level ' + ch.level,
+    sum1: SPECIES[ch.species].name + ' ' + CLASSES[ch.className].name + '   HP ' + hp + '/' + d.hpMax,
+    sum2: 'Ref ' + d.reflex + '  Fort ' + d.fortitude + '  Will ' + d.will + '  BAB ' + fmtMod(d.bab)
+  };
+  ABILS.forEach(k => m['af_' + k] = 'final ' + finalAbility(ch, k) + ' (' + fmtMod(d.mods[k]) + ')');
+  SKILLS.forEach(s => m['sk_' + s.key] = fmtMod(skillTotal(ch, s, d)));
+  document.querySelectorAll('[data-d]').forEach(el => { const v = m[el.getAttribute('data-d')]; if (v !== undefined) el.textContent = v; });
+  document.querySelectorAll('[data-ph]').forEach(el => { el.placeholder = (el.getAttribute('data-ph') === 'bab' ? fmtMod(d.bab) : d.hpMax) + ' (computed)'; });
+  document.querySelectorAll('.condition-step').forEach(el => el.classList.toggle('active', Number(el.getAttribute('data-i')) === ch.conditionIndex));
+  const btn = document.getElementById('swBtn'), hint = document.getElementById('swHint');
+  if (btn) {
+    const ok = !ch.secondWindUsed && hp <= Math.floor(d.hpMax / 2);
+    btn.disabled = !ok;
+    hint.textContent = ch.secondWindUsed ? 'Already used today.' : (ok ? 'Available.' : 'Only usable at half hit points or less.');
+  }
+  schedulePickerRefresh();
+}
+
+let _pickerSig = '', _pickerTimer = null;
+function pickerSignature(ch) { const c = pickerContext(ch); return JSON.stringify([c.species, c.plan.length, c.plan[0], c.abilities, c.trained]); }
+function mountPicker() {
+  const el = document.getElementById('swPicker');
+  if (!el || !pickerAvailable() || !state.draft) return;
+  const ch = state.draft, ps = ch.pickerState || {};
+  const init = {picks: ps.picks || {}, showAll: !!ps.showAll, traditions: (ps.trad || []).slice()};
+  if (ps.off && ps.off.length) { init.sources = {}; window.SWSE_DATA.sources.forEach(x => init.sources[x.key] = ps.off.indexOf(x.key) === -1); }
+  _pickerSig = pickerSignature(ch);
+  window.SWSEPicker.mount(el, {
+    context: () => pickerContext(state.draft),
+    state: init,
+    onChange: st => {
+      const off = Object.keys(st.sources || {}).filter(k => st.sources[k] === false);
+      state.draft.pickerState = {picks: st.picks, showAll: !!st.showAll, off: off, trad: (st.traditions || []).slice()};
+    }
+  });
+}
+function schedulePickerRefresh() {
+  if (!pickerAvailable() || !document.getElementById('swPicker') || !state.draft) return;
+  const sig = pickerSignature(state.draft);
+  if (sig === _pickerSig) return;
+  _pickerSig = sig;
+  clearTimeout(_pickerTimer);
+  _pickerTimer = setTimeout(() => { if (document.getElementById('swPicker')) window.SWSEPicker.refresh(); }, 350);
+}
+function reEditor() { const y = window.scrollY; document.getElementById('app').innerHTML = renderEditor(); refreshDerived(); mountPicker(); window.scrollTo(0, y); }
+
+/* ---------- editor handlers ---------- */
+function ch_text(f, v) { state.draft[f] = v; refreshDerived(); }
+function ch_num(f, v) { state.draft[f] = v === '' ? 0 : Number(v); refreshDerived(); }
+function ch_orNull(f, v) { state.draft[f] = v === '' ? null : Number(v); refreshDerived(); }
+function ch_abil(k, v) { state.draft.abilities[k] = Number(v) || 0; refreshDerived(); }
+function ch_misc(k, v) { state.draft.defenseMisc[k] = Number(v) || 0; refreshDerived(); }
+function ch_bg(k, v) { state.draft.background[k] = v; }
+function ch_pick(f, v) { state.draft[f] = v; if (f === 'className') state.draft.hpMaxOverride = null; reEditor(); }
+function ch_standardArray() { [15, 14, 13, 12, 10, 8].forEach((n, i) => state.draft.abilities[ABILS[i]] = n); reEditor(); }
+function ch_skill(key) {
+  const a = state.draft.skillsTrained, i = a.indexOf(key);
+  if (i === -1) a.push(key); else a.splice(i, 1);
+  refreshDerived();
+}
+function ch_addTag(field, inputId) {
+  const el = document.getElementById(inputId), v = el.value.trim();
+  if (!v) return;
+  state.draft[field].push(v);
+  reEditor();
+}
+function ch_removeTag(field, i) { state.draft[field].splice(i, 1); reEditor(); }
+function ch_cond(i) { state.draft.conditionIndex = i; refreshDerived(); }
+function ch_hp(delta) { const ch = state.draft, d = computeDerived(ch); ch.hpCurrent = Math.max(0, Math.min(d.hpMax, hpNow(ch, d) + delta)); refreshDerived(); }
+function ch_hpFull() { state.draft.hpCurrent = computeDerived(state.draft).hpMax; refreshDerived(); }
+function ch_secondWind() {
+  const ch = state.draft, d = computeDerived(ch);
+  const heal = Math.max(Math.floor(d.hpMax / 4), finalAbility(ch, 'con'));
+  ch.hpCurrent = Math.min(d.hpMax, hpNow(ch, d) + heal);
+  ch.secondWindUsed = true;
+  refreshDerived();
+}
+function ch_newDay() { state.draft.secondWindUsed = false; refreshDerived(); }
+function ch_fp(delta) { const ch = state.draft, d = computeDerived(ch); ch.forcePointsCurrent = Math.max(0, Math.min(d.fpMax, fpNow(ch, d) + delta)); refreshDerived(); }
+function ch_fpFull() { state.draft.forcePointsCurrent = computeDerived(state.draft).fpMax; refreshDerived(); }
+function ch_dark(delta) { const ch = state.draft, cap = computeDerived(ch).darkSideCap; ch.darkSideScore = Math.max(0, Math.min(cap, ch.darkSideScore + delta)); refreshDerived(); }
+
+
+/* ---------------------------------------------------------------------
+   DICE
+--------------------------------------------------------------------- */
+function rand(n) {
+  try {
+    const a = new Uint32Array(1), lim = Math.floor(4294967296 / n) * n;
+    let x;
+    do { crypto.getRandomValues(a); x = a[0]; } while (x >= lim);
+    return (x % n) + 1;
+  } catch (e) { return Math.floor(Math.random() * n) + 1; }
+}
+function rollDice(n, sides) { const r = []; for (let i = 0; i < n; i++) r.push(rand(sides)); return r; }
+function signed(n) { return (n >= 0 ? '+ ' : '- ') + Math.abs(n); }
+
+function rollLogHtml() {
+  if (!state.rollLog.length) return '<p class="hint">No rolls yet. Use the Roll buttons on skills, attacks, and Force Points, or the dice above.</p>';
+  return state.rollLog.map(r => `<div class="rollrow"><div><strong>${escapeHtml(r.label)}</strong><div class="hint">${escapeHtml(r.detail)}</div></div>
+    <div class="rollnum ${r.flag || ''}">${escapeHtml(r.total)}</div></div>`).join('');
+}
+let toastTimer = null;
+function logRoll(label, detail, total, flag) {
+  state.rollLog.unshift({label: label, detail: detail, total: String(total), flag: flag || '', t: Date.now()});
+  if (state.rollLog.length > 12) state.rollLog.pop();
+  const el = document.getElementById('rollLog'); if (el) el.innerHTML = rollLogHtml();
+  const t = document.getElementById('rollToast');
+  if (t) {
+    t.innerHTML = `<strong>${escapeHtml(label)}</strong> <span class="rollnum ${flag || ''}">${escapeHtml(total)}</span><div class="hint">${escapeHtml(detail)}</div>`;
+    t.classList.add('show');
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(() => t.classList.remove('show'), 6000);
+  }
+}
+function rollCheck(label, bonus) {
+  const d = rand(20);
+  const note = d === 20 ? '  natural 20' : (d === 1 ? '  natural 1' : '');
+  logRoll(label, 'd20 [' + d + '] ' + signed(bonus) + note, d + bonus, d === 20 ? 'nat20' : (d === 1 ? 'nat1' : ''));
+}
+function rollSkill(key) {
+  const s = SKILLS.find(x => x.key === key), d = computeDerived(state.draft);
+  rollCheck(s.name, skillTotal(state.draft, s, d));
+}
+function rollAttack(kind) {
+  const ch = state.draft, d = computeDerived(ch);
+  const mod = kind === 'melee' ? d.mods.str : d.mods.dex;
+  rollCheck(kind === 'melee' ? 'Melee attack' : 'Ranged attack', d.bab + mod + (Number(ch.attackMisc) || 0));
+}
+function rollForcePoint() {
+  const ch = state.draft, d = computeDerived(ch), fp = fpNow(ch, d);
+  if (fp <= 0) { logRoll('Force Point', 'No Force Points left to spend.', '0'); return; }
+  ch.forcePointsCurrent = fp - 1;
+  const lvl = Number(ch.level) || 1, dice = lvl >= 15 ? 3 : (lvl >= 8 ? 2 : 1);
+  const r = rollDice(dice, 6), best = Math.max.apply(null, r);
+  logRoll('Force Point', dice + 'd6 [' + r.join(', ') + '] keep the highest, add to your roll', best);
+  refreshDerived();
+}
+function rollDie(n) { const v = rand(n); logRoll('d' + n, 'd' + n + ' [' + v + ']', v, (n === 20 && v === 20) ? 'nat20' : ((n === 20 && v === 1) ? 'nat1' : '')); }
+function rollExpr() {
+  const el = document.getElementById('trayExpr');
+  const m = /^\s*(\d{0,2})d(\d{1,3})\s*(?:([+-])\s*(\d{1,4}))?\s*$/i.exec(el.value);
+  if (!m) { logRoll('Dice', 'Try something like 2d6+3 or d20-1.', '?'); return; }
+  const n = Number(m[1] || 1), sides = Number(m[2]), mod = m[3] ? (m[3] === '-' ? -1 : 1) * Number(m[4]) : 0;
+  if (n < 1 || sides < 2) { logRoll('Dice', 'Use at least one die with two or more sides.', '?'); return; }
+  const r = rollDice(n, sides), sum = r.reduce((a, b) => a + b, 0);
+  logRoll(el.value.trim().toLowerCase().replace(/\s+/g, ''), '[' + r.join(', ') + ']' + (mod ? ' ' + signed(mod) : ''), sum + mod);
+}
+function rollAbilityScores() {
+  const parts = [];
+  ABILS.forEach(k => {
+    const r = rollDice(4, 6), low = Math.min.apply(null, r);
+    const kept = r.slice(), i = kept.indexOf(low); kept.splice(i, 1);
+    const total = kept.reduce((a, b) => a + b, 0);
+    state.draft.abilities[k] = total;
+    parts.push(ABIL_LABEL[k].slice(0, 3) + ' ' + total + ' [' + r.join(',') + ' drop ' + low + ']');
+  });
+  logRoll('Ability scores', parts.join('   '), '4d6 x 6');
+  reEditor();
+}
+function rollCredits() {
+  const ch = state.draft, mult = Number((/x\s*(\d+)/.exec(CLASSES[ch.className].credits) || [0, 0])[1]);
+  const r = rollDice(3, 4), sum = r.reduce((a, b) => a + b, 0);
+  ch.credits = sum * mult;
+  logRoll('Starting credits', '3d4 [' + r.join(', ') + '] = ' + sum + ' x ' + mult, sum * mult);
+  reEditor();
+}
+
+async function ch_save() {
+  const note = document.getElementById('saveNote'), btn = document.getElementById('saveBtn');
+  btn.disabled = true; note.textContent = 'Saving...';
+  try {
+    await persist(state.draft, state.editingAsGm);
+    state.isNew = false;
+    note.textContent = REMOTE ? 'Saved to the spreadsheet.' : 'Saved in this browser.';
+    btn.textContent = 'Save';
+    state.saveNote = note.textContent;
+  } catch (e) {
+    note.textContent = 'Not saved: ' + errText(e) + ' Your changes are still on screen.';
+  }
+  btn.disabled = false;
+}
+
+function ch_back() {
+  if (state.editingAsGm) { setView('roster'); } else { setView('home'); }
+}
+
+async function ch_delete() {
+  if (!confirm('Delete this character? This cannot be undone.')) return;
+  const ch = state.draft;
+  try {
+    if (REMOTE) {
+      const r = await jsonp(Object.assign({action: 'delete', id: ch.id}, authParams(state.editingAsGm)));
+      if (!r.ok) throw new Error(r.error);
+    }
+    if (state.editingAsGm) state.roster = state.roster.filter(c => c.id !== ch.id);
+    else { state.chars = state.chars.filter(c => c.id !== ch.id); saveCache(); }
+    ch_back();
+  } catch (e) { document.getElementById('saveNote').textContent = 'Not deleted: ' + errText(e); }
+}
+
+/* ---------------------------------------------------------------------
+   RENDER: RULES REFERENCE
+--------------------------------------------------------------------- */
+function renderTalentReferenceHtml() {
+  let out = '';
+  ['jedi', 'soldier', 'scoundrel', 'scout', 'noble', 'cross'].forEach(cls => {
+    out += `<p style="margin-top:10px;"><strong>${cls === 'cross' ? 'Cross Class' : CLASSES[cls].name}</strong></p><ul>`;
+    TALENT_CATALOG[cls].forEach(t => {
+      out += `<li><strong>${escapeHtml(t.tree)}</strong>: <span class="src">${escapeHtml(t.source)}</span>${t.note ? '. ' + escapeHtml(t.note) : ''}</li>`;
+    });
+    out += `</ul>`;
+  });
+  return out;
+}
+
+function referenceItems() {
+  return [
+    {title: 'Abilities and Modifiers', body: 'Modifier = floor((score - 10) / 2). Species modifiers apply on top of your rolled or assigned scores.'},
+    {title: 'Defenses', body: 'Reflex, Fortitude, and Will each start at 10, then add your character level (Reflex adds the higher of level or armor bonus), an ability modifier (Dex, Con, Wis), a class bonus, a species bonus, and any misc modifier. Class bonuses at 1st level, in Reflex/Fortitude/Will order: Jedi +1/+1/+1, Soldier +1/+2/+0, Scout +2/+1/+0, Scoundrel +2/+0/+1, Noble +1/+0/+2. Class bonuses do not stack between classes; you take the best for each Defense.'},
+    {title: 'Hit Points, Damage Threshold, and Second Wind', body: 'First level hit points: Noble and Scoundrel 18, Scout 24, Jedi and Soldier 30, each plus Constitution modifier. Per level after that: Noble and Scoundrel 1d6, Scout 1d8, Jedi and Soldier 1d10, each plus Constitution modifier. Damage Threshold is shown as equal to Fortitude Defense. Second Wind is a separate, once per day swift action usable at half hit points or less, healing one quarter of max hit points (rounded down) or your Constitution score, whichever is more. It does not by itself move you up the Condition Track.'},
+    {title: 'The Condition Track', body: 'Steps run Normal, -1, -2, -5, -10, Helpless. Recovering one step costs three swift actions spent on the recover action, which can be split across consecutive rounds rather than spent all at once.'},
+    {title: 'Force Points and Dark Side Score', body: 'Force Point pool is 5 plus half your character level, rounded down, and resets to full each time you gain a level. Spend one as a free action, once per round, to roll 1d6 (2d6 at 8th level, 3d6 at 15th, keeping the higher single die). Dark Side Score is capped at your Wisdom score; on reaching that cap a character becomes fully dark side dominant.'},
+    {title: 'Base Attack Bonus', body: 'Jedi and Soldier: equal to class level. Noble, Scoundrel, and Scout: three quarters of class level, rounded down. Multiclass characters add the bonus from each class.'},
+    {title: 'Skills', body: 'Skill total = d20 + half your level (rounded down) + ability modifier + a flat +5 if trained + misc. Trained skills at 1st level: Jedi 2, Noble 6, Scoundrel 4, Scout 5, Soldier 3, all plus Intelligence modifier.'},
+    {title: 'Feats and Talents, When You Get Them', body: 'Feats arrive at 1st, 3rd, 6th, 9th, 12th, 15th, and 18th level, plus each class\'s bonus feat schedule (every even level), plus one extra feat at 1st level for a Human. Talents arrive at 1st level and every odd level after that.'},
+    {title: 'Starting Credits by Class', body: 'Jedi: 3d4 x 100. Scoundrel, Scout, and Soldier: 3d4 x 250. Noble: 3d4 x 400.'},
+    {title: 'Species Available in This Era', body: 'Human (no adjustments, bonus feat), Duros (+2 Dex, +2 Int, -2 Con), Rodian (+2 Dex, -2 Wis, -2 Cha), Twi\'lek (+2 Cha, -2 Wis), Wookiee (+4 Str, +2 Con, -2 Dex, -2 Wis, -2 Cha), Zabrak (no adjustments, +1 to all four Defenses), Cathar (+2 Dex, -2 Int, refugees present on Taris), Miraluka (+2 Int, -2 Dex, automatic Force Training, sees through Force Vision rather than eyes).'},
+    {title: 'Talent Trees and Force Powers by Class', body: renderTalentReferenceHtml()},
+    {title: 'Equipment and Gear', body: 'Full weapons, armor, and general equipment tables live in the Arms and Equipment compendium. Categories: ' + EQUIP_CATEGORIES.map(e => '<strong>' + e.name + '</strong> (' + e.note + ')').join('; ') + '.'},
+    {title: 'GM and Antagonist Material', body: 'The Sith Remnant Toolkit (Sith Remnant Disciple and Sith Alchemy talent trees) lives in the Complete Game Master\'s Guide and is meant for the hidden Sith remnant thread, not player characters. Named boss builds and the generic adversary and army stat blocks live in Named Threats of the Onslaught, Creatures People and Bosses, and Armies of the Onslaught.'},
+    {title: 'Where Everything Lives', body: 'This app tracks characters. The full rules text behind every entry lives in your booklets: Volume II (Beyond the Hydian Way) for core mechanics, the Jedi and the Force booklets and the New Talents booklet for character build crunch, the Arms and Equipment compendium for gear, and the Complete Game Master\'s Guide for anything GM facing.'}
+  ];
+}
+
+function renderReference() {
+  const f = state.refFilter.toLowerCase();
+  const items = referenceItems().filter(r => !f || (r.title + r.body).toLowerCase().includes(f));
+  return `<div class="searchbox"><input id="refSearch" placeholder="Search the rules reference..." value="${escapeHtml(state.refFilter)}" oninput="refFilter(this.value)"></div>
+    <div id="refList">${refListHtml(items)}</div>`;
+}
+function refListHtml(items) {
+  return items.map(r => `<details class="ref"><summary>${escapeHtml(r.title)}</summary><div class="body">${r.body}</div></details>`).join('') || '<p class="hint">No matches.</p>';
+}
+function refFilter(v) {
+  state.refFilter = v;
+  const f = v.toLowerCase();
+  document.getElementById('refList').innerHTML = refListHtml(referenceItems().filter(r => !f || (r.title + r.body).toLowerCase().includes(f)));
+}
+
+/* ---------------------------------------------------------------------
+   BOOT
+--------------------------------------------------------------------- */
+(function boot() {
+  state.gm = sessionStorage.getItem(KEY_GM) || null;
+  if (!REMOTE) {
+    state.chars = lsGet(KEY_LOCAL, []);
+    state.view = 'home';
+    render();
+    return;
+  }
+  const remembered = lsGet(KEY_USER, null);
+  if (remembered && remembered.name && remembered.hash) {
+    state.user = remembered;
+    state.chars = lsGet(KEY_CACHE + remembered.name.toLowerCase(), []);
+    state.view = 'home';
+    render();
+    loadMine();
+  } else {
+    state.view = 'login';
+    render();
+  }
+  document.addEventListener('visibilitychange', () => {
+    if (!document.hidden && state.user && state.view === 'home') loadMine();
+  });
+})();
+
+</script>
+</body>
+</html>
